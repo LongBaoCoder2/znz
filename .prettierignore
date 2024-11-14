@@ -1,0 +1,6 @@
+.github/
+client/node_modules/
+client/dist/
+
+sfu/node_modules/
+sfu/dist/
