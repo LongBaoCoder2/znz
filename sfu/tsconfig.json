@@ -10,7 +10,7 @@
     "outDir": "dist",
     "paths": {
       "@/*": ["./*"],
-      "@core/*": ["../core/src/*"],
+      "@core/*": ["../core/src/*"]
     }
   },
   "include": ["src/**/*.ts"],
