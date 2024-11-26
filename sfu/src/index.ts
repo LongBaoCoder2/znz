@@ -7,8 +7,8 @@ import path from "path";
 const app: Express = express();
 
 // Đọc chứng chỉ và khóa SSL
-const key = fs.readFileSync(path.join(__dirname, "./ssl/localhost.key"), "utf-8");
-const cert = fs.readFileSync(path.join(__dirname, "./ssl/localhost.crt"), "utf-8");
+const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
+const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
 
 
 // Tạo HTTPS server
