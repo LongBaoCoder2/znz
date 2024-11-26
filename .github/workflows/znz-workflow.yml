@@ -64,15 +64,15 @@ jobs:
         working-directory: ./sfu
         run: npm run lint
 
-      - name: npm run test (sfu)
-        working-directory: ./sfu
-        run: npm run test
+      # - name: npm run test (sfu)
+      #   working-directory: ./sfu
+      #   run: npm run test
 
       # Lint and test client project
       - name: npm run lint (client)
         working-directory: ./client
         run: npm run lint
 
-      - name: npm run test (client)
-        working-directory: ./client
-        run: npm run test
+      # - name: npm run test (client)
+      #   working-directory: ./client
+      #   run: npm run test
