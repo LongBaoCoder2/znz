@@ -27,6 +27,7 @@ jobs:
       # Step 3: Install Dependencies
       - name: Install Dependencies
         run: |
+          rm -rf node_modules package-lock.json yarn.lock
           npm ci
 
       # Step 4: Fix Formatting Issues
