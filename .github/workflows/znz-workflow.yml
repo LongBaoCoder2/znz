@@ -24,11 +24,10 @@ jobs:
           node-version-file: './package.json'
           cache: 'npm'
 
-      # Step 3: Install Dependencies
       - name: Install Dependencies
         run: |
-          rm -rf node_modules package-lock.json yarn.lock
-          npm ci
+          npm install
+          npm install rollup --save-dev
 
       # Step 4: Fix Formatting Issues
       - name: Prettier Auto Fix
