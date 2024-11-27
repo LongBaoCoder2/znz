@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: './package.json'
+          node-version: '22.5.1'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -39,18 +39,18 @@ jobs:
         run: |
           npm run lint
 
-      # # Step 6: Build SFU and Client Projects
-      # - name: Build Projects
-      #   run: |
-      #     npm run build
+      # Step 6: Build SFU and Client Projects
+      - name: Build Projects
+        run: |
+          npm run build
 
-      # # Step 7: Verify Build Artifacts
-      # - name: Verify SFU Build Output
-      #   working-directory: ./sfu
-      #   run: |
-      #     ls -la dist
+      # Step 7: Verify Build Artifacts
+      - name: Verify SFU Build Output
+        working-directory: ./sfu
+        run: |
+          ls -la dist
 
-      # - name: Verify Client Build Output
-      #   working-directory: ./client
-      #   run: |
-      #     ls -la build
+      - name: Verify Client Build Output
+        working-directory: ./client
+        run: |
+          ls -la build
