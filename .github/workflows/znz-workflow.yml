@@ -21,50 +21,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # Automatically uses Node.js version specified in package.json engines field
-          node-version-file: './client/package.json'
+          node-version-file: './package.json'
           cache: 'npm'
 
-      # Step 3: Configure Cache
-      # - name: Cache NPM Dependencies
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.npm
-      #       ./sfu/node_modules
-      #       ./client/node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
-
-      # Step 4: Install dependencies for SFU project
-      # - name: Install Dependencies (SFU)
-      #   working-directory: ./sfu
-      #   run: |
-      #     npm install
-
-      # Step 5: Install dependencies for Client project
-      # - name: Install Dependencies (Client)
-      #   working-directory: ./client
-      #   run: |
-      #     npm ci || npm install
-
+      # Step 3: Install Dependencies
       - name: Install Dependencies
         run: |
           npm install
 
-      # Step 6: Run Lint for SFU project
-      - name: Lint SFU Project
-        run: npm run lint
+      # Step 4: Fix Formatting Issues
+      - name: Prettier Auto Fix
+        run: |
+          npm run lint:fix
 
-      # Step 8: Test SFU project (Optional)
-      # Uncomment this if testing is enabled for the SFU project
-      # - name: Test SFU Project
-      #   working-directory: ./sfu
-      #   run: npm test
-
-      # Step 9: Test Client project (Optional)
-      # Uncomment this if testing is enabled for the Client project
-      # - name: Test Client Project
-      #   working-directory: ./client
-      #   run: npm test
+      # Step 5: Run Linting
+      - name: Run Lint
+        run: |
+          npm run lint
