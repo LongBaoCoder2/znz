@@ -38,3 +38,19 @@ jobs:
       - name: Run Lint
         run: |
           npm run lint
+
+      # Step 6: Build SFU and Client Projects
+      - name: Build Projects
+        run: |
+          npm run build
+
+      # Step 7: Verify Build Artifacts
+      - name: Verify SFU Build Output
+        working-directory: ./sfu
+        run: |
+          ls -la dist
+
+      - name: Verify Client Build Output
+        working-directory: ./client
+        run: |
+          ls -la build
