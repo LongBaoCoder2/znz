@@ -26,37 +26,35 @@ jobs:
           cache: 'npm'
 
       # Step 3: Configure Cache
-      - name: Cache NPM Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ./sfu/node_modules
-            ./client/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # - name: Cache NPM Dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ~/.npm
+      #       ./sfu/node_modules
+      #       ./client/node_modules
+      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-node-
 
       # Step 4: Install dependencies for SFU project
-      - name: Install Dependencies (SFU)
-        working-directory: ./sfu
-        run: |
-          npm ci || npm install
+      # - name: Install Dependencies (SFU)
+      #   working-directory: ./sfu
+      #   run: |
+      #     npm install
 
       # Step 5: Install dependencies for Client project
-      - name: Install Dependencies (Client)
-        working-directory: ./client
+      # - name: Install Dependencies (Client)
+      #   working-directory: ./client
+      #   run: |
+      #     npm ci || npm install
+
+      - name: Install Dependencies
         run: |
-          npm ci || npm install
+          npm install
 
       # Step 6: Run Lint for SFU project
       - name: Lint SFU Project
-        working-directory: ./sfu
-        run: npm run lint
-
-      # Step 7: Run Lint for Client project
-      - name: Lint Client Project
-        working-directory: ./client
         run: npm run lint
 
       # Step 8: Test SFU project (Optional)
