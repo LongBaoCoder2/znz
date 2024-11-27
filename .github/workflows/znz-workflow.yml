@@ -1,10 +1,10 @@
 name: znz-client
 
-on: [pull_request, workflow_dispatch]
+on:
+  pull_request:
+  workflow_dispatch:
 
 concurrency:
-  # Cancel a currently running workflow from the same PR, branch or tag when a
-  # new workflow is triggered.
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
@@ -12,67 +12,65 @@ jobs:
   ci:
     strategy:
       matrix:
-        ci:
-        - os: ubuntu-20.04
-          node: 18
-        - os: ubuntu-22.04
-          node: 20
-        - os: ubuntu-24.04
-          node: 22
-        - os: macos-13
-          node: 18
-        - os: macos-14
-          node: 20
-        - os: macos-15
-          node: 22
-        - os: windows-2022
-          node: 22
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, macos-13, macos-14, macos-15, windows-2022]
+        node: [18, 20, 22]
 
-    runs-on: ${{ matrix.ci.os }}
+    runs-on: ${{ matrix.os }}
+
     steps:
-      - name: Checkout
+      # Step 1: Checkout the code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Node.js
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.ci.node }}
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
 
-      - name: Configure cache
+      # Step 3: Configure Cache
+      - name: Cache NPM Dependencies
         uses: actions/cache@v3
         with:
           path: |
             ~/.npm
             ./sfu/node_modules
             ./client/node_modules
-          key: ${{ matrix.ci.os }}-node-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ matrix.ci.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node }}-
 
-      # Install dependencies for sfu project
-      - name: npm ci (sfu)
+      # Step 4: Install dependencies for SFU project
+      - name: Install Dependencies (SFU)
         working-directory: ./sfu
-        run: npm ci --force --foreground-scripts
+        run: |
+          npm ci --platform=$(uname -m) --foreground-scripts || npm install
 
-      # Install dependencies for client project
-      - name: npm ci (client)
+      # Step 5: Install dependencies for Client project
+      - name: Install Dependencies (Client)
         working-directory: ./client
-        run: npm ci --force --foreground-scripts
+        run: |
+          npm ci --platform=$(uname -m) --foreground-scripts || npm install
 
-      # Lint and test sfu project
-      - name: npm run lint (sfu)
+      # Step 6: Run Lint for SFU project
+      - name: Lint SFU Project
         working-directory: ./sfu
         run: npm run lint
 
-      # - name: npm run test (sfu)
+      # Step 7: Run Lint for Client project
+      - name: Lint Client Project
+        working-directory: ./client
+        run: npm run lint
+
+      # Step 8: Test SFU project (Optional)
+      # Uncomment this if testing is enabled for the SFU project
+      # - name: Test SFU Project
       #   working-directory: ./sfu
-      #   run: npm run test
+      #   run: npm test
 
-      # Lint and test client project
-      - name: npm run lint (client)
-        working-directory: ./client
-        run: npm run lint
-
-      # - name: npm run test (client)
+      # Step 9: Test Client project (Optional)
+      # Uncomment this if testing is enabled for the Client project
+      # - name: Test Client Project
       #   working-directory: ./client
-      #   run: npm run test
+      #   run: npm test
