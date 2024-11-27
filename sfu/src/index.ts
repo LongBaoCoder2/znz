@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response } from "express";
 import https from "https";
 import fs from "fs";
 import path from "path";
@@ -15,11 +15,11 @@ const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-
 const server = https.createServer({ key, cert }, app);
 
 // Middleware Express
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("This is a secure server");
 });
 
-// Lắng nghe request
-server.listen(3001, () => {
-  console.log("listening on 3001");
+const PORT = 8333;
+server.listen(PORT, () => {
+  console.log(`[server]: Server is running at http://localhost:${PORT}`);
 });
