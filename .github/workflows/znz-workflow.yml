@@ -27,7 +27,7 @@ jobs:
       # Step 3: Install Dependencies
       - name: Install Dependencies
         run: |
-          npm install
+          npm ci
 
       # Step 4: Fix Formatting Issues
       - name: Prettier Auto Fix
