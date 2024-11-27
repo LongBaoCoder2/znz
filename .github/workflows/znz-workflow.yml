@@ -48,12 +48,7 @@ jobs:
           yarn lint
 
       # Step 6: Build SFU and Client Projects
-      - name: Build SFU Project
-        working-directory: ./sfu
-        run: |
-          yarn build
-      - name: Build Client Project
-        working-directory: ./client
+      - name: Build Project
         run: |
           yarn build
 
@@ -65,4 +60,4 @@ jobs:
       - name: Verify Client Build Output
         working-directory: ./client
         run: |
-          ls -la build
+          ls -la dist
