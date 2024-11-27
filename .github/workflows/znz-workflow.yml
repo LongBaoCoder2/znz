@@ -10,12 +10,7 @@ concurrency:
 
 jobs:
   ci:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04, macos-13, macos-14, macos-15, windows-2022]
-        node: [18, 20, 22]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout the code
@@ -26,7 +21,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          # Automatically uses Node.js version specified in package.json engines field
+          node-version-file: './client/package.json'
           cache: 'npm'
 
       # Step 3: Configure Cache
@@ -37,21 +33,21 @@ jobs:
             ~/.npm
             ./sfu/node_modules
             ./client/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node }}-
+            ${{ runner.os }}-node-
 
       # Step 4: Install dependencies for SFU project
       - name: Install Dependencies (SFU)
         working-directory: ./sfu
         run: |
-          npm ci --platform=$(uname -m) --foreground-scripts || npm install
+          npm ci || npm install
 
       # Step 5: Install dependencies for Client project
       - name: Install Dependencies (Client)
         working-directory: ./client
         run: |
-          npm ci --platform=$(uname -m) --foreground-scripts || npm install
+          npm ci || npm install
 
       # Step 6: Run Lint for SFU project
       - name: Lint SFU Project
