@@ -1,0 +1,23 @@
+name: znz
+
+services:
+  db:
+    image: postgres:17.2
+    restart: always
+    environment:
+      POSTGRES_DB: znz
+      POSTGRES_USER: znz
+      POSTGRES_PASSWORD: znz
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      start_interval: 5s
+
+volumes:
+  db-data:
+    driver: local
