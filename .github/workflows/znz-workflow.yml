@@ -1,0 +1,63 @@
+name: znz-client
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.5.1'
+          cache: 'yarn'
+
+      # Step 3: Install Dependencies
+      - name: Install Root Dependencies
+        run: |
+          yarn install
+      # - name: Install SFU Dependencies
+      #   working-directory: ./sfu
+      #   run: |
+      #     yarn install
+      # - name: Install Client Dependencies
+      #   working-directory: ./client
+      #   run: |
+      #     yarn install
+
+      # Step 4: Fix Formatting Issues
+      - name: Prettier Auto Fix
+        run: |
+          yarn lint:fix
+
+      # Step 5: Run Linting
+      - name: Run Lint
+        run: |
+          yarn lint
+
+      # Step 6: Build SFU and Client Projects
+      - name: Build Project
+        run: |
+          yarn build
+
+      # Step 7: Verify Build Artifacts
+      - name: Verify SFU Build Output
+        working-directory: ./sfu
+        run: |
+          ls -la dist
+      - name: Verify Client Build Output
+        working-directory: ./client
+        run: |
+          ls -la dist
