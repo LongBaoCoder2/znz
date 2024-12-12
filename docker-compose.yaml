@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: znz
       POSTGRES_USER: znz
       POSTGRES_PASSWORD: znz
+    ports:
+      - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -16,7 +18,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-      start_interval: 5s
 
 volumes:
   db-data:
