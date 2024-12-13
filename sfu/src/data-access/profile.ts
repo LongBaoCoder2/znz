@@ -1,4 +1,4 @@
-import { db as database } from "@/src/db";
+import { db as database } from "@sfu/db";
 import { profile } from "../db/schemas";
 import { and, eq, gte, lte } from "drizzle-orm";
 

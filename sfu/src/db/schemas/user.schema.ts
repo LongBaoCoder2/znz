@@ -6,7 +6,7 @@ export const user = pgTable("user", {
   email: varchar("email", { length: 255 }),
   passwordHash: text("password_hash"),
   pwdSalt: text("pwd_salt"),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  emailVerified: timestamp("email_verified", { mode: "date" }),
 });
 
 

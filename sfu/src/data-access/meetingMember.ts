@@ -1,4 +1,4 @@
-import { db as database } from "@/src/db";
+import { db as database } from "@sfu/db";
 import { meetingMember, meetingMemberRoleEnum } from "../db/schemas";
 import { and, eq } from "drizzle-orm";
 

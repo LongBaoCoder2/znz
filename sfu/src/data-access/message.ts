@@ -1,4 +1,4 @@
-import { db as database } from "@/src/db";
+import { db as database } from "@sfu/db";
 import { message } from "../db/schemas";
 import { eq, and, or } from "drizzle-orm";
 

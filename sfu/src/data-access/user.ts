@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { db as database } from "@/src/db"
+import { db as database } from "@sfu/db"
 import { hashPassword } from "../utils";
 import { user } from "../db/schemas";
 import { eq } from "drizzle-orm";

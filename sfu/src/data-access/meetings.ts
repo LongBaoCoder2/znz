@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { db as database } from "@/src/db";
+import { db as database } from "@sfu/db";
 import { meetings, meetingStatusEnum } from "../db/schemas";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../utils"; 
