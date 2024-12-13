@@ -9,8 +9,7 @@
     "outDir": "dist", 
     "rootDir": "src", 
     "paths": {
-      "@/*": ["./*"],
-      "@core/*": ["../core/src/*"]
+      "@sfu/*": ["./src/*"],
     }
   },
   "include": ["src/**/*.ts"],

@@ -9,6 +9,9 @@
     "build": "rimraf dist && tsc --build",
     "start": "npm run db:migrate && node dist/index.js",
     "dev": "npm run db:migrate && nodemon --watch src --exec ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "db:push": "drizzle-kit push --config=drizzle.config.ts",
     "db:generate-dev": "drizzle-kit generate --config=drizzle.config.ts",
@@ -17,7 +20,9 @@
   "dependencies": {
     "drizzle-orm": "^0.38.1",
     "express": "^4.21.1",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "uuid": "^11.0.3",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

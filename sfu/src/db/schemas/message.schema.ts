@@ -1,7 +1,6 @@
 import { pgTable, serial, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
-import { meetings } from "./meetings";
-import { user } from "./user";
-import { memberStatusEnum } from "./enums";
+import { meetings } from "./meetings.schema";
+import { user } from "./user.schema";
 
 export const message = pgTable("message", {
   id: serial("id").primaryKey(),
@@ -11,5 +10,4 @@ export const message = pgTable("message", {
   createdAt: timestamp("created_at"),
   isPinned: boolean("is_pinned").default(false),
   toUser: integer("to_user").references(() => user.id),
-  status: memberStatusEnum("status").default("request"),
 });
