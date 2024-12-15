@@ -3,16 +3,15 @@
     "target": "ESNext",
     "module": "commonjs",
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist",
+    "outDir": "dist", 
+    "rootDir": "src", 
     "paths": {
-      "@/*": ["./*"],
-      "@core/*": ["../core/src/*"]
+      "@sfu/*": ["./src/*"],
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"] 
 }

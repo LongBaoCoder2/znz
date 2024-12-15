@@ -32,9 +32,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).send("Something went wrong!");
 });
 
-// Lắng nghe request
-server.listen(3001, () => {
-  sfuLogger.info("Server is listening on port 3001");
+const PORT = 8333;
+server.listen(PORT, () => {
+  console.log(`[server]: Server is running at http://localhost:${PORT}`);
+  sfuLogger.info(`Server is listening on port ${PORT}`);
 });
 
 // Xử lý lỗi từ server
