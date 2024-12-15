@@ -1,25 +1,44 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import https from "https";
 import fs from "fs";
 import path from "path";
+import { childLogger } from "./utils/logger"; // Import logger con
 
-// Tạo ứng dụng Express
+// Tạo logger dành riêng cho SFU
+const sfuLogger = childLogger("sfu");
+
 const app: Express = express();
 
-// Đọc chứng chỉ và khóa SSL
 const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
 const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
 
-
-// Tạo HTTPS server
 const server = https.createServer({ key, cert }, app);
 
-// Middleware Express
+// Middleware log tất cả request
+app.use((req: Request, res: Response, next: NextFunction) => {
+  sfuLogger.info(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
+// Route xử lý chính
 app.get("/", (req: Request, res: Response) => {
+  sfuLogger.info("Handling request to '/'");
   res.send("This is a secure server");
+});
+
+// Middleware xử lý lỗi
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  sfuLogger.error(`Error occurred: ${err.message}`);
+  res.status(500).send("Something went wrong!");
 });
 
 const PORT = 8333;
 server.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);
+  sfuLogger.info(`Server is listening on port ${PORT}`);
+});
+
+// Xử lý lỗi từ server
+server.on("error", (error: Error) => {
+  sfuLogger.error(`Server error: ${error.message}`);
 });
