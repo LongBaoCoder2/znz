@@ -1,0 +1,55 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.form-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+}
+
+.znz {
+  align-self: flex-start;
+  margin-left: 2em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: royalblue;
+}
+
+.title {
+  color: royalblue;
+  margin: 2em;
+}
+
+.text {
+  font-size: larger;
+  margin: 4em;
+}
+
+.about-us-container {
+  background-color: #E5E5E5;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-us-text {
+  align-self: self-start;
+  margin-left: 4em;
+  margin-bottom: 4em;
+}
+
+.about-us-image {
+  width: 75%;
+}
+
+.white-button {
+  color: royalblue;
+  margin-top: 4em;
+}
