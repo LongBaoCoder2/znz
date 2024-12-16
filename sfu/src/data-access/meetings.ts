@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { db as database } from "@sfu/db";
 import { meetings, meetingStatusEnum } from "../db/schemas";
 import { eq } from "drizzle-orm";
-import { hashPassword } from "../utils"; 
+import { hashPassword } from "../utils/crypt"; 
 
 type MeetingStatus = typeof meetingStatusEnum.enumValues[number];
 
