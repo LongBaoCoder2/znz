@@ -1,44 +1,36 @@
-import express, { Express, Request, Response, NextFunction } from "express";
-import https from "https";
 import fs from "fs";
 import path from "path";
-import { childLogger } from "./utils/logger"; // Import logger con
 
-// Tạo logger dành riêng cho SFU
-const sfuLogger = childLogger("sfu");
+import "dotenv/config.js";
+import https from "https";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import express, { Express } from "express";
+import homeRoute from "./routes/home.route";
+import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
 
 const app: Express = express();
 
 const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
 const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
-
 const server = https.createServer({ key, cert }, app);
 
-// Middleware log tất cả request
-app.use((req: Request, res: Response, next: NextFunction) => {
-  sfuLogger.info(`Incoming request: ${req.method} ${req.url}`);
-  next();
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(cors({ origin: true, credentials: true }));
 
-// Route xử lý chính
-app.get("/", (req: Request, res: Response) => {
-  sfuLogger.info("Handling request to '/'");
-  res.send("This is a secure server");
-});
+// Middleware log tất cả request
+app.use(loggingMiddleware);
 
 // Middleware xử lý lỗi
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  sfuLogger.error(`Error occurred: ${err.message}`);
-  res.status(500).send("Something went wrong!");
-});
+app.use(errorMiddleware);
 
-const PORT = 8333;
-server.listen(PORT, () => {
-  console.log(`[server]: Server is running at http://localhost:${PORT}`);
-  sfuLogger.info(`Server is listening on port ${PORT}`);
-});
+/* ================= Define route ================= */
+app.use("/api", homeRoute);
+
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, serverListenHandler(PORT));
 
 // Xử lý lỗi từ server
-server.on("error", (error: Error) => {
-  sfuLogger.error(`Server error: ${error.message}`);
-});
+server.on("error", serverErrorMiddleware);

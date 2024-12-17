@@ -7,5 +7,5 @@ export const profile = pgTable("profile", {
   avatarUrl: varchar("avatar_url", { length: 255 }),
   createdAt: timestamp("created_at"),
   lastLoginAt: timestamp("last_login_at"),
-  userId: integer("user_id").references(() => user.id),
+  userId: integer("user_id").references(() => user.id)
 });

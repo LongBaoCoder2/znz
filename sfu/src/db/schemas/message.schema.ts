@@ -4,10 +4,14 @@ import { user } from "./user.schema";
 
 export const message = pgTable("message", {
   id: serial("id").primaryKey(),
-  meetingId: integer("meeting_id").notNull().references(() => meetings.id),
-  userId: integer("user_id").notNull().references(() => user.id),
+  meetingId: integer("meeting_id")
+    .notNull()
+    .references(() => meetings.id),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => user.id),
   content: varchar("content", { length: 1000 }).notNull(),
   createdAt: timestamp("created_at"),
   isPinned: boolean("is_pinned").default(false),
-  toUser: integer("to_user").references(() => user.id),
+  toUser: integer("to_user").references(() => user.id)
 });

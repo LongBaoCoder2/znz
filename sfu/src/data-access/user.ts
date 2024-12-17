@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import { db as database } from "@sfu/db"
-import { hashPassword } from "../utils";
+import { db as database } from "@sfu/db";
+import { hashPassword } from "../utils/crypt";
 import { user } from "../db/schemas";
 import { eq } from "drizzle-orm";
 
@@ -13,17 +13,16 @@ export async function createUser(username: string, email: string, plainTextPassw
       username,
       email,
       passwordHash: hash,
-      pwdSalt: salt,
+      pwdSalt: salt
     })
     .returning();
   return newUser;
 }
 
-
 // Get a user by ID
 export async function getUserById(userId: number) {
   const existingUser = await database.query.user.findFirst({
-    where: eq(user.id, userId),
+    where: eq(user.id, userId)
   });
   return existingUser;
 }
@@ -31,19 +30,17 @@ export async function getUserById(userId: number) {
 // Get a user by email
 export async function getUserByEmail(email: string) {
   const existingUser = await database.query.user.findFirst({
-    where: eq(user.email, email),
+    where: eq(user.email, email)
   });
   return existingUser;
 }
-
 
 export async function getUserByUsername(username: string) {
   const existingUser = await database.query.user.findFirst({
-    where: eq(user.username, username),
+    where: eq(user.username, username)
   });
   return existingUser;
 }
-
 
 // Delete a user by ID
 export async function deleteUserById(userId: number) {
@@ -78,7 +75,7 @@ export async function setEmailVerified(userId: number) {
   await database
     .update(user)
     .set({
-      emailVerified: new Date(),
+      emailVerified: new Date()
     })
     .where(eq(user.id, userId));
 }
