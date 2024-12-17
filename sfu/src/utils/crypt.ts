@@ -9,16 +9,9 @@ export function createUUID() {
 
 export async function hashPassword(plainTextPassword: string, salt: string) {
   return new Promise<string>((resolve, reject) => {
-    crypto.pbkdf2(
-      plainTextPassword,
-      salt,
-      ITERATIONS,
-      64,
-      "sha512",
-      (err, derivedKey) => {
-        if (err) reject(err);
-        resolve(derivedKey.toString("hex"));
-      }
-    );
+    crypto.pbkdf2(plainTextPassword, salt, ITERATIONS, 64, "sha512", (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(derivedKey.toString("hex"));
+    });
   });
 }

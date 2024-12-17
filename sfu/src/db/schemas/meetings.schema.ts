@@ -9,7 +9,9 @@ export const meetings = pgTable("meetings", {
   passwordHash: varchar("password_hash", { length: 255 }),
   pwdSalt: varchar("pwd_salt", { length: 255 }),
   uri: varchar("uri", { length: 255 }).notNull().unique(),
-  host: integer("host").notNull().references(() => user.id),
+  host: integer("host")
+    .notNull()
+    .references(() => user.id),
   createdAt: timestamp("created_at"),
-  status: meetingStatusEnum("status").default("created"),
+  status: meetingStatusEnum("status").default("created")
 });

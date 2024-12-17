@@ -14,8 +14,8 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console(), // Hiển thị log trong console
-    new transports.File({ filename: "logs/app.log" }), // Lưu log vào file
-  ],
+    new transports.File({ filename: "logs/app.log" }) // Lưu log vào file
+  ]
 });
 
 /**

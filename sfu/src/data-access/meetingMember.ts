@@ -2,7 +2,7 @@ import { db as database } from "@sfu/db";
 import { meetingMember, meetingMemberRoleEnum } from "../db/schemas";
 import { and, eq } from "drizzle-orm";
 
-type MeetingMemberRole = typeof meetingMemberRoleEnum.enumValues[number];
+type MeetingMemberRole = (typeof meetingMemberRoleEnum.enumValues)[number];
 
 // Create a new meeting member
 export async function createMeetingMember(
@@ -18,7 +18,7 @@ export async function createMeetingMember(
       userId,
       displayName,
       joinedAt: new Date(),
-      role,
+      role
     })
     .returning();
 
@@ -28,7 +28,7 @@ export async function createMeetingMember(
 // Get a meeting member by ID
 export async function getMeetingMemberById(memberId: number) {
   const member = await database.query.meetingMember.findFirst({
-    where: eq(meetingMember.id, memberId),
+    where: eq(meetingMember.id, memberId)
   });
   return member;
 }
@@ -36,7 +36,7 @@ export async function getMeetingMemberById(memberId: number) {
 // Get all members of a specific meeting
 export async function getMeetingMembersByMeetingId(meetingId: number) {
   const members = await database.query.meetingMember.findMany({
-    where: eq(meetingMember.meetingId, meetingId),
+    where: eq(meetingMember.meetingId, meetingId)
   });
   return members;
 }
@@ -44,20 +44,14 @@ export async function getMeetingMembersByMeetingId(meetingId: number) {
 // Get all meetings a specific user is part of (Logined Participant)
 export async function getMeetingsByUserId(userId: number) {
   const userMeetings = await database.query.meetingMember.findMany({
-    where: eq(meetingMember.userId, userId),
+    where: eq(meetingMember.userId, userId)
   });
   return userMeetings;
 }
 
 // Update a meeting member's details
-export async function updateMeetingMember(
-  memberId: number,
-  updatedFields: Partial<typeof meetingMember>
-) {
-  await database
-    .update(meetingMember)
-    .set(updatedFields)
-    .where(eq(meetingMember.id, memberId));
+export async function updateMeetingMember(memberId: number, updatedFields: Partial<typeof meetingMember>) {
+  await database.update(meetingMember).set(updatedFields).where(eq(meetingMember.id, memberId));
 }
 
 // Delete a meeting member by ID
@@ -71,29 +65,17 @@ export async function removeMeetingMembers(meetingId: number) {
 }
 
 // Get meeting members by role
-export async function getMeetingMembersByRole(
-  meetingId: number, 
-  role: MeetingMemberRole
-) {
+export async function getMeetingMembersByRole(meetingId: number, role: MeetingMemberRole) {
   const members = await database.query.meetingMember.findMany({
-    where: and(
-      eq(meetingMember.meetingId, meetingId),
-      eq(meetingMember.role, role)
-    ),
+    where: and(eq(meetingMember.meetingId, meetingId), eq(meetingMember.role, role))
   });
   return members;
 }
 
 // Check if a user is a member of a specific meeting
-export async function isMemberOfMeeting(
-  userId: number, 
-  meetingId: number
-) {
+export async function isMemberOfMeeting(userId: number, meetingId: number) {
   const member = await database.query.meetingMember.findFirst({
-    where: and(
-      eq(meetingMember.userId, userId),
-      eq(meetingMember.meetingId, meetingId)
-    ),
+    where: and(eq(meetingMember.userId, userId), eq(meetingMember.meetingId, meetingId))
   });
 
   // Convert to boolean
@@ -101,12 +83,6 @@ export async function isMemberOfMeeting(
 }
 
 // Update a member's role
-export async function updateMemberRole(
-  memberId: number, 
-  newRole: MeetingMemberRole
-) {
-  await database
-    .update(meetingMember)
-    .set({ role: newRole })
-    .where(eq(meetingMember.id, memberId));
+export async function updateMemberRole(memberId: number, newRole: MeetingMemberRole) {
+  await database.update(meetingMember).set({ role: newRole }).where(eq(meetingMember.id, memberId));
 }
