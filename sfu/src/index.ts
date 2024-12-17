@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
+import { config } from "@sfu/core/config";
 
-import "dotenv/config.js";
 import https from "https";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -11,8 +11,8 @@ import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListen
 
 const app: Express = express();
 
-const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
-const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
+const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
+const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
 const server = https.createServer({ key, cert }, app);
 
 app.use(express.json());
@@ -29,8 +29,8 @@ app.use(errorMiddleware);
 /* ================= Define route ================= */
 app.use("/api", homeRoute);
 
-const PORT = process.env.PORT || 8000;
-server.listen(PORT, serverListenHandler(PORT));
+
+server.listen(config.listenPort, serverListenHandler(config.listenPort));
 
 // Xử lý lỗi từ server
 server.on("error", serverErrorMiddleware);
