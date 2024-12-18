@@ -11,7 +11,9 @@
     "prettier": "npm run format --prefix ../"
   },
   "dependencies": {
+    "bootstrap": "^5.3.3",
     "react": "^18.3.1",
+    "react-bootstrap": "^2.10.7",
     "react-dom": "^18.3.1",
     "react-router": "^7.0.2"
   },
