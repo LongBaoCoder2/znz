@@ -1,25 +1,36 @@
-import express, { Express, Request, Response } from "express";
-import https from "https";
 import fs from "fs";
 import path from "path";
 
-// Tạo ứng dụng Express
+import "dotenv/config.js";
+import https from "https";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import express, { Express } from "express";
+import homeRoute from "./routes/home.route";
+import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
+
 const app: Express = express();
 
-// Đọc chứng chỉ và khóa SSL
 const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
 const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
-
-
-// Tạo HTTPS server
 const server = https.createServer({ key, cert }, app);
 
-// Middleware Express
-app.get("/", (req: Request, res: Response) => {
-  res.send("This is a secure server");
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(cors({ origin: true, credentials: true }));
 
-const PORT = 8333;
-server.listen(PORT, () => {
-  console.log(`[server]: Server is running at http://localhost:${PORT}`);
-});
+// Middleware log tất cả request
+app.use(loggingMiddleware);
+
+// Middleware xử lý lỗi
+app.use(errorMiddleware);
+
+/* ================= Define route ================= */
+app.use("/api", homeRoute);
+
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, serverListenHandler(PORT));
+
+// Xử lý lỗi từ server
+server.on("error", serverErrorMiddleware);

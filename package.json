@@ -37,6 +37,11 @@
     "express": "^4.21.1",
     "httpolyglot": "^0.1.2",
     "mediasoup": "^3.15.2",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0"
+  },
+  "_moduleAliases": {
+    "@client": "client/dist",
+    "@sfu": "sfu/dist"
   }
 }
