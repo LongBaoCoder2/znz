@@ -3,6 +3,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import { useNavigate } from "react-router";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   let navigate = useNavigate();
@@ -10,7 +11,7 @@ function App() {
   const session = false;
   useEffect(() => {
     if (!session) {
-      navigate("/login");
+      navigate("/signin");
     }
   }, []);
 
