@@ -23,7 +23,7 @@ function SignUp() {
   };
 
   return (
-    <Container fluid>
+    <Container fluid className="vw-100">
       <Row>
         <Col className="vh-100 d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: "#E5E5E5" }}>
           <h5 className="align-self-start mt-5 ms-5">
