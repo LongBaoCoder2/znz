@@ -7,6 +7,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
 import homeRoute from "./routes/home.route";
+import meetingRoute from "./routes/meeting.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
 
 const app: Express = express();
@@ -28,6 +29,7 @@ app.use(errorMiddleware);
 
 /* ================= Define route ================= */
 app.use("/api", homeRoute);
+app.use("/api", meetingRoute);
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, serverListenHandler(PORT));
