@@ -1,18 +1,31 @@
 import { SendMessageDto } from "@sfu/dtos/message.dto";
-import { createMessage } from "@sfu/data-access/message";  // Database helper function
+import { createMessage } from "@sfu/data-access/message";
+import { getMeetingMessages } from "@sfu/data-access/message";
 
 class MessageService {
-  // Function to send a message
   async sendMessage(messageDto: SendMessageDto) {
     const { meetingId, userId, content, toUser, isPinned } = messageDto;
     try {
-      // Create a new message in the database
+      if (!content || content.length === 0) {
+        throw new Error("Message content cannot be empty");
+      }
+
       const newMessage = await createMessage(meetingId, userId, content, toUser, isPinned);
       
       return newMessage;
     } catch (error: any) {
-      throw new Error("Error sending message: " + error.message);
+      throw new Error(error.message);
     }
+  }
+
+  async getMeetingMessages(meetingId: number) {
+    if (isNaN(meetingId)) {
+      throw new Error("Invalid meeting ID.");
+    }
+
+    // Call the function from message.ts
+    const messages = await getMeetingMessages(meetingId);
+    return messages;
   }
 };
 
