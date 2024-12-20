@@ -5,5 +5,5 @@ const path = "/message/";
 const messageRoute = Router();
 
 messageRoute.post(path, messageController.sendMesageHandler);
-
+messageRoute.get(path + "meeting/:meetingId", messageController.getMeetingMessages);
 export default messageRoute;
