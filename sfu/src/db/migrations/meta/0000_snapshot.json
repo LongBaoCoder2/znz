@@ -1,5 +1,5 @@
 {
-  "id": "659934b8-02aa-4ef5-8c7e-98063bf2cdf4",
+  "id": "f7212a3d-6449-4c62-a2e7-cb1f707a2dbd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -226,14 +226,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "member_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'request'"
         }
       },
       "indexes": {},
@@ -378,6 +370,12 @@
         "pwd_salt": {
           "name": "pwd_salt",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         }
