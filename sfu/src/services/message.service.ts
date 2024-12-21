@@ -2,6 +2,8 @@ import { SendMessageDto } from "@sfu/dtos/message.dto";
 import { createMessage } from "@sfu/data-access/message";
 import { getMeetingMessages } from "@sfu/data-access/message";
 import { pinMessage, unpinMessage } from "@sfu/data-access/message";
+import { getMessageById } from "@sfu/data-access/message";
+import { getMeetingById } from "@sfu/data-access/meetings";
 
 class MessageService {
   async sendMessage(messageDto: SendMessageDto) {
@@ -24,6 +26,11 @@ class MessageService {
       if (isNaN(meetingId)) {
         throw new Error("Invalid meetingId.");
       }
+
+      const meeting = await getMeetingById(meetingId);
+      if (!meeting) {
+        throw new Error("Invalid meetingId.");
+      }
   
       const messages = await getMeetingMessages(meetingId);
 
@@ -35,7 +42,12 @@ class MessageService {
 
   async updateMessagePinStatus(messageId: number, pinStatus: boolean = true) {
     try {
-      if (isNaN(Number(messageId))) {
+      if (isNaN(messageId)) {
+        throw new Error("Invalid messageId.");
+      }
+      
+      const message = await getMessageById(messageId);
+      if (!message) {
         throw new Error("Invalid messageId.");
       }
 

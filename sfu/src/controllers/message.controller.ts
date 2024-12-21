@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { childLogger } from "@sfu/utils/logger";
+import { childLogger } from "@sfu/core/logger";
 import { SendMessageDto } from "@sfu/dtos/message.dto";
 import MessageService from "@sfu/services/message.service";
 
