@@ -31,8 +31,7 @@ CREATE TABLE "message" (
 	"content" varchar(1000) NOT NULL,
 	"created_at" timestamp,
 	"is_pinned" boolean DEFAULT false,
-	"to_user" integer,
-	"status" "member_status" DEFAULT 'request'
+	"to_user" integer
 );
 --> statement-breakpoint
 CREATE TABLE "profile" (
@@ -49,7 +48,8 @@ CREATE TABLE "user" (
 	"username" varchar(255),
 	"email" varchar(255),
 	"password_hash" text,
-	"pwd_salt" text
+	"pwd_salt" text,
+	"email_verified" timestamp
 );
 --> statement-breakpoint
 ALTER TABLE "meeting_member" ADD CONSTRAINT "meeting_member_meeting_id_meetings_id_fk" FOREIGN KEY ("meeting_id") REFERENCES "public"."meetings"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
