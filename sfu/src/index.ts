@@ -7,7 +7,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
 import homeRoute from "./routes/home.route";
+import messageRoute from "./routes/message.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
+import AuthRoute from "./routes/auth.route";
 
 const app: Express = express();
 
@@ -27,9 +29,13 @@ app.use(loggingMiddleware);
 app.use(errorMiddleware);
 
 /* ================= Define route ================= */
+const authRoute = (new AuthRoute()).router
 app.use("/api", homeRoute);
+app.use("/api", messageRoute);
+app.use("/api", authRoute);
 
-const PORT = process.env.PORT || 8000;
+// const PORT = process.env.PORT || 8000;
+const PORT = 3334;
 server.listen(PORT, serverListenHandler(PORT));
 
 // Xử lý lỗi từ server
