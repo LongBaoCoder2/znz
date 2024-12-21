@@ -1,19 +1,21 @@
 import fs from "fs";
 import path from "path";
+import { config } from "@sfu/core/config";
 
-import "dotenv/config.js";
 import https from "https";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
 import homeRoute from "./routes/home.route";
+import meetingRoute from "./routes/meeting.route";
 import messageRoute from "./routes/message.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
+import { setupSocketServer } from "./socket";
 
 const app: Express = express();
 
-const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
-const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
+const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
+const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
 const server = https.createServer({ key, cert }, app);
 
 app.use(express.json());
@@ -29,10 +31,16 @@ app.use(errorMiddleware);
 
 /* ================= Define route ================= */
 app.use("/api", homeRoute);
+
+app.use("/api", meetingRoute);
+
 app.use("/api", messageRoute);
 
-const PORT = process.env.PORT || 8000;
-server.listen(PORT, serverListenHandler(PORT));
+
+
+server.listen(config.listenPort, serverListenHandler(config.listenPort));
 
 // Xử lý lỗi từ server
 server.on("error", serverErrorMiddleware);
+
+setupSocketServer(server);
