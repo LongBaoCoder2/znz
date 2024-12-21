@@ -14,7 +14,10 @@
     "rootDir": "src", 
     "paths": {
       "@sfu/*": ["./src/*"],
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"] 
