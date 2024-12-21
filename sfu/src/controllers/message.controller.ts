@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { childLogger } from "@sfu/utils/logger";
 import { SendMessageDto } from "@sfu/dtos/message.dto";
 import MessageService from "@sfu/services/message.service";
-import { getMeetingMessages} from "@sfu/data-access/message";
-import { pinMessage, unpinMessage } from "@sfu/data-access/message";
 
 const sfuLogger = childLogger("sfu");
 
@@ -13,86 +11,92 @@ const messageController = {
       const messageDto : SendMessageDto = req.body;
       
       const messageService = new MessageService();
+      const createdMessage = await messageService.sendMessage(messageDto);
 
-      const newMessage = await messageService.sendMessage(messageDto);
-      res.status(201).send("Message sent successfully.");
+      res.status(201).json({
+        message: "Message sent successfully.",
+        data: createdMessage,
+      });
     }
     catch (error: any) {
       sfuLogger.error("Error sending message: ", error);
-      if (error.message == "Message content cannot be empty") {
-        res.status(400).json({
-          message: "Message content cannot be empty."
-        })
-      }
-      else {
-        res.status(500).json({
-          message: "Error sending message.",
-        });
-      }
+
+      const statusCode = error.message === "Message content cannot be empty." ? 400 : 500;
+      const errorMessage = statusCode === 400
+        ? "Message content cannot be empty."
+        : "Error sending message.";
+  
+      res.status(statusCode).json({
+        message: errorMessage,
+      });
     }
   },
 
   getMeetingMessagesHandler: async (req: Request, res: Response) => {
     try {
-      const meetingId = parseInt(req.params.meetingId);
+      const meetingId = parseInt(req.params.meetingId, 10);
 
       const messageService = new MessageService();
-      const messages = await messageService.getMeetingMessages(meetingId);
+      const meetingMessages = await messageService.getMeetingMessages(meetingId);
 
-      res.status(200).json(messages); // Return the messages
+      res.status(200).json({
+        message: "Messages retrieved successfully.",
+        data: meetingMessages,
+      });
     } catch (error: any) {
-      sfuLogger.error("Error getting messages: ", error);
-      if (error.message == "Invalid meeting ID.") {
-        res.status(400).json({
-          message: "Invalid meeting ID.",
-        })
-      }
-      else {
-        res.status(500).json({
-          message: "Error retrieving messages.",
-        });
-      }
+      sfuLogger.error("Error retrieving meeting messages: ", error);
+
+      const statusCode = error.message === "Invalid meetingId." ? 400 : 500;
+      const errorMessage = statusCode === 400
+        ? "Invalid meetingId."
+        : "Error sending message.";
+
+      res.status(statusCode).json({
+        message: errorMessage,
+      });
     }
   },
 
   pinMessageHandler: async (req: Request, res: Response) => {
-    const { messageId } = req.params; // Extract messageId from URL params
-
     try {
-      // Ensure messageId is a valid number
-      if (!messageId || isNaN(Number(messageId))) {
-        res.status(400).json({ message: "Invalid message ID." });
-        return;
-      }
+      const messageId = parseInt(req.params.messageId, 10);
 
-      await pinMessage(Number(messageId));
+      const messageService = new MessageService();
+      await messageService.updateMessagePinStatus(messageId, true);
 
       res.status(200).json({ message: "Message pinned successfully." });
     } catch (error: any) {
       sfuLogger.error("Error pinning message: ", error);
-      res.status(500).json({
-        message: "Error pinning message.",
+
+      const statusCode = error.message === "Invalid messageId." ? 400 : 500;
+      const errorMessage = statusCode === 400
+        ? "Invalid messageId."
+        : "Error pinning message.";
+
+      res.status(statusCode).json({
+        message: errorMessage,
       });
     }
   },
 
   unpinMessageHandler: async (req: Request, res: Response) => {
-    const { messageId } = req.params; // Extract messageId from URL params
-
     try {
-      // Ensure messageId is a valid number
-      if (!messageId || isNaN(Number(messageId))) {
-        res.status(400).json({ message: "Invalid message ID." });
-        return;
-      }
+      const messageId = parseInt(req.params.messageId, 10);
 
-      await unpinMessage(Number(messageId));
+      const messageService = new MessageService();
+      await messageService.updateMessagePinStatus(messageId, false);
 
-      res.status(200).json({ message: "Message unpinned successfully." });
+      res.status(200).json({ message: "Message pinned successfully." });
     } catch (error: any) {
       sfuLogger.error("Error unpinning message: ", error);
-      res.status(500).json({
-        message: "Error unpinning message.",
+
+      const statusCode = error.message === "Invalid messageId." ? 400 : 500;
+      const errorMessage = statusCode === 400
+        ? "Invalid messageId."
+        : "Error unpinning message.";
+
+      res.status(statusCode).json({
+        message: errorMessage,
       });
     }
   }
