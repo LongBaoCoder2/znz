@@ -1,6 +1,6 @@
 {
-  "id": "659934b8-02aa-4ef5-8c7e-98063bf2cdf4",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "816f1482-3b04-40f5-95cc-6b3bdf298b51",
+  "prevId": "659934b8-02aa-4ef5-8c7e-98063bf2cdf4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -226,14 +226,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "member_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'request'"
         }
       },
       "indexes": {},
@@ -378,6 +370,12 @@
         "pwd_salt": {
           "name": "pwd_salt",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         }
