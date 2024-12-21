@@ -23,7 +23,7 @@ function SignUp() {
   };
 
   return (
-    <Container fluid>
+    <Container fluid className="vw-100">
       <Row>
         <Col className="vh-100 d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: "#E5E5E5" }}>
           <h5 className="align-self-start mt-5 ms-5">
@@ -37,7 +37,7 @@ function SignUp() {
           <Button
             className="mt-5 text-primary"
             variant="light"
-            href="/login"
+            href="/signin"
           >
             Đăng nhập
           </Button>
@@ -127,7 +127,7 @@ function SignUp() {
           </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button href="/login">Đăng nhập</Button>
+          <Button href="/signin">Đăng nhập</Button>
         </Modal.Footer>
       </Modal>
     </Container>
