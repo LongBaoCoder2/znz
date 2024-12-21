@@ -19,8 +19,14 @@ function Meeting() {
             {URI}
           </h5>
         </Row>
-        <Row>
-          <Col className="col-8 offset-2 bg-warning d-flex flex-column justify-content-center align-items-center">
+        <Row className="d-flex flex-row">
+          <Col className="col-6 bg-warning d-flex flex-column justify-content-center align-items-center">
+            <Image
+              src="https://placehold.co/600x400"
+              style={{ width: "90%" }}
+            />
+          </Col>
+          <Col className="col-6 bg-warning d-flex flex-column justify-content-center align-items-center">
             <Image
               src="https://placehold.co/600x400"
               style={{ width: "90%" }}
