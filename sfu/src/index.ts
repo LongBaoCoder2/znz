@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import express, { Express } from "express";
 import homeRoute from "./routes/home.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
+import { setupSocketServer } from "./socket";
 
 const app: Express = express();
 
@@ -34,3 +35,5 @@ server.listen(config.listenPort, serverListenHandler(config.listenPort));
 
 // Xử lý lỗi từ server
 server.on("error", serverErrorMiddleware);
+
+setupSocketServer(server);

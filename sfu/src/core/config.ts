@@ -28,6 +28,7 @@ export const config = {
   sslCrt: '../ssl/localhost.crt',
   sslKey: '../ssl/localhost.key',
   databaseString: process.env.DATABASE_URL,
+  numWorkers: Object.keys(os.cpus()).length,
 
   mediasoup: {
     // Worker settings
@@ -48,7 +49,7 @@ export const config = {
     // Router settings
     router: {
       mediaCodecs: [
-        {
+      {
           kind: 'audio',
           mimeType: 'audio/opus',
           clockRate: 48000,
@@ -72,8 +73,11 @@ export const config = {
           announcedIp: getLocalIp() // replace by public IP address
         }
       ],
+      enableUdp: true,
+      enableTcp: true,
+      preferUdp: true,
+      initialAvailableOutgoingBitrate: 1000000,
       maxIncomingBitrate: 1500000,
-      initialAvailableOutgoingBitrate: 1000000
     }
   }
 } as const;
