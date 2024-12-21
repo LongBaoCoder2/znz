@@ -3,6 +3,7 @@ import path from "path";
 
 import "dotenv/config.js";
 import https from "https";
+import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
@@ -15,8 +16,8 @@ const app: Express = express();
 
 const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
 const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
-const server = https.createServer({ key, cert }, app);
-
+// const server = https.createServer({ key, cert }, app);
+const server = http.createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -29,7 +30,7 @@ app.use(loggingMiddleware);
 app.use(errorMiddleware);
 
 /* ================= Define route ================= */
-const authRoute = (new AuthRoute()).router
+const authRoute = (new AuthRoute()).router;
 app.use("/api", homeRoute);
 app.use("/api", messageRoute);
 app.use("/api", authRoute);

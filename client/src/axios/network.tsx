@@ -1,8 +1,8 @@
-const ip = "127.0.0.1";
-const port_server = "8000";
+const ip = "localhost";
+const port_server = "3334";
 
 const getURL = (api: string) => {
-    return 'http://' + ip + ':' + port_server + '/' + api;
+    return 'http://' + ip + ':' + port_server + '/api' + api;
 };
 
 export default getURL;

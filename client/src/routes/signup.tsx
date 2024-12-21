@@ -37,7 +37,7 @@ function SignUp() {
           <Button
             className="mt-5 text-primary"
             variant="light"
-            href="/login"
+            href="/signin"
           >
             Đăng nhập
           </Button>
@@ -127,7 +127,7 @@ function SignUp() {
           </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button href="/login">Đăng nhập</Button>
+          <Button href="/signin">Đăng nhập</Button>
         </Modal.Footer>
       </Modal>
     </Container>
