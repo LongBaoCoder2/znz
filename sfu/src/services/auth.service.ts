@@ -5,7 +5,7 @@ import { User } from "../interfaces/users.interface";
 import { createUUID, hashPassword } from "../utils/crypt";
 import {  HttpException } from "../exceptions/HttpException";
 import { DataStoredInToken, TokenData } from '../interfaces/auth.interface';
-import { createUser, getUserByEmail, getUserByUsername, verifyPassword } from "@sfu/data-access/user";
+import { createUser, getUserByEmail, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
 import jwt from 'jsonwebtoken';
 
 class AuthService {
@@ -27,15 +27,15 @@ class AuthService {
 
 
      public async login(userData: LoginUserDto): Promise<{ cookie: string; findUser: User }> {
-        const findUser =  await getUserByEmail(userData.email);
-        if(!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
+        const findUser =  await getUserByUsername(userData.username);
+        if(!findUser) throw new HttpException(409, `You're user name ${userData.username} not found`);
 
         const salt = findUser.pwdSalt;
         if(!salt) {
             throw new HttpException(409, 'Password salt is missing');
         }
            
-        const isPasswordMatching = await verifyPassword(userData.email, userData.password);
+        const isPasswordMatching = await verifyUserNamePassword(userData.username, userData.password);
 
         if(!isPasswordMatching) throw new HttpException(409, 'Wrong password');
 
