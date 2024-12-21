@@ -17,7 +17,7 @@ export class Room {
   name: string;
   url: string;
   createdAt: Date;
-  hostEmail: string;
+  hostId: number;
   password: string;
 
   // Members: socketId -> member
@@ -47,7 +47,7 @@ export class Room {
 
   constructor(options: {
       name: string;
-      hostEmail: string;
+      hostId: number;
       url: string;
       password: string;
       // workerIndex: number;
@@ -55,7 +55,7 @@ export class Room {
   }) {
       this.id = createUUID();
       this.name = options.name;
-      this.hostEmail = options.hostEmail;
+      this.hostId = options.hostId;
       this.createdAt = new Date();
       this.maxParticipants = options.maxParticipants || 20;
       this.password = options.password;
@@ -317,7 +317,7 @@ interface SetupRoomResult {
 
 export async function setupRoom(name: string, 
                                 url: string, 
-                                hostEmail: string, 
+                                hostId: number, 
                                 password: string,
                                 maxParticipants?: number): Promise<SetupRoomResult> {
     
@@ -335,7 +335,7 @@ export async function setupRoom(name: string,
         console.log('-- router newtransport. room=%s', name);
     });
 
-    const room = new Room({name, url, hostEmail, maxParticipants, password });
+    const room = new Room({name, url, hostId, maxParticipants, password });
     const roomId = room.id;
 
     room.router = router;

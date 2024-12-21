@@ -1,15 +1,29 @@
 import crypto from "crypto";
 import { db as database } from "@sfu/db";
-import { meetings, meetingStatusEnum } from "../db/schemas";
+import { meetingMember, meetings, meetingStatusEnum } from "../db/schemas";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "../utils/crypt";
 
 type MeetingStatus = (typeof meetingStatusEnum.enumValues)[number];
 
 // Create a new meeting
-export async function createMeeting(title: string, displayId: string, password: string, uri: string, hostId: number) {
+export async function createMeeting(
+  title: string,
+  displayId: string,
+  uri: string,
+  hostId: number,
+  hostName: string,
+  password: string | undefined
+) {
   const salt = crypto.randomBytes(128).toString("base64");
-  const passwordHash = await hashPassword(password, salt);
+
+  let passwordHash: string | null = null;
+
+  if (!password) {
+    password = crypto.randomBytes(8).toString("hex");
+  }
+
+  passwordHash = await hashPassword(password, salt);
 
   const [newMeeting] = await database
     .insert(meetings)
@@ -21,17 +35,34 @@ export async function createMeeting(title: string, displayId: string, password: 
       uri,
       host: hostId,
       createdAt: new Date(),
-      status: "created" // Assuming "created" is the initial status
+      status: "created",
     })
     .returning();
 
+  await database.insert(meetingMember).values({
+    meetingId: newMeeting.id,
+    userId: hostId,
+    displayName: hostName, 
+    joinedAt: new Date(),
+    role: "host", 
+  });
+
   return newMeeting;
 }
+
 
 // Get a meeting by its ID
 export async function getMeetingById(meetingId: number) {
   const meeting = await database.query.meetings.findFirst({
     where: eq(meetings.id, meetingId)
+  });
+  return meeting;
+}
+
+// Get a meeting by uri
+export async function getMeetingByUrl(uri: string) {
+  const meeting = await database.query.meetings.findFirst({
+    where: eq(meetings.uri, uri)
   });
   return meeting;
 }
