@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { childLogger } from "@sfu/utils/logger";
+import { childLogger } from "@sfu/core/logger";
 
 const sfuLogger = childLogger("sfu");
 
