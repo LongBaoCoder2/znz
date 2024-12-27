@@ -2,10 +2,9 @@ import "dotenv/config";
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { LoginUserDto } from "../dtos/loginUsers.dto";
 import { User } from "../interfaces/users.interface";
-import { createUUID, hashPassword } from "../utils/crypt";
 import { HttpException } from "../exceptions/HttpException";
 import { DataStoredInToken, TokenData } from "../interfaces/auth.interface";
-import { createUser, getUserByEmail, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
+import { createUser, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
 import jwt from "jsonwebtoken";
 
 class AuthService {
@@ -27,39 +26,23 @@ class AuthService {
     return { expiresIn, token: jwt.sign(dataStoredInToken, secretKey, { expiresIn }) };
   }
 
-  // Thiết lập cookie
-  // public setCookie(res: Response, tokenData: TokenData, name: string): void {
-  //   const options = {
-  //     httpOnly: true,
-  //     secure: process.env.NODE_ENV === "production", // Chỉ cho HTTPS
-  //     sameSite: "strict", // Tránh CSRF
-  //     maxAge: tokenData.expiresIn * 1000, // Thời gian sống của cookie
-  //     path: "/"
-  //   };
-  //   res.cookie(name, tokenData.token, options);
-  // }
-
   public async signup(userData: CreateUserDto): Promise<User> {
-    const findUser = await getUserByEmail(userData.email);
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
 
     const findUserByUsername = await getUserByUsername(userData.username);
     if (findUserByUsername) throw new HttpException(409, `You're username ${userData.username} already exists`);
     console.log(
-      `userData.username: ${userData.username} - userData.email: ${userData.email} - userData.password: ${userData.password}`
+      `userData.username: ${userData.username} - userData.password: ${userData.password}`
     );
-    const createUserData: User = await createUser(userData.username, userData.email, userData.password);
+    const createUserData: User = await createUser(userData.username, userData.password);
 
     return {
       id: createUserData.id,
-      email: createUserData.email,
       username: createUserData.username
     };
   }
 
   public async login(
     userData: LoginUserDto,
-    // res: Response
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const findUser = await getUserByUsername(userData.username);
     if (!findUser) throw new HttpException(409, `You're user name ${userData.username} not found`);
@@ -76,28 +59,23 @@ class AuthService {
     const accessTokenData = this.createToken(findUser);
     const refreshTokenData = this.createRefreshToken(findUser);
 
-    // // Lưu token vào cookie
-    // this.setCookie(res, accessTokenData, "AccessToken");
-    // this.setCookie(res, refreshTokenData, "RefreshToken");
-
     return {
-      accessToken: accessTokenData.token,
-      refreshToken: refreshTokenData.token,
       user: {
         id: findUser.id,
         username: findUser.username,
-        email: findUser.email
-      }
+      },
+      accessToken: accessTokenData.token,
+      refreshToken: refreshTokenData.token,
     };
   }
 
   public async logout(userData: User): Promise<{ message: string }> {
-    if (!userData.email) {
-      throw new HttpException(409, `Email is not valid`);
+    if (!userData.username) {
+      throw new HttpException(409, `Username is not valid`);
     }
-    const findUser = await getUserByEmail(userData.email);
+    const findUser = await getUserByUsername(userData.username);
 
-    if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
+    if (!findUser) throw new HttpException(409, `You're Username ${userData.username} not found`);
 
     return { message: "success" };
   }
@@ -108,7 +86,7 @@ class AuthService {
       const secretKey: string = process.env.REFRESH_SECRET_KEY || "RefreshSecret";
       const decoded = jwt.verify(refreshToken, secretKey) as DataStoredInToken;
 
-      const user: User = { id: decoded._id, email: "", username: "" }; // Lấy thông tin user từ database nếu cần
+      const user: User = { id: decoded._id, username: "" }; // Lấy thông tin user từ database nếu cần
       const accessTokenData = this.createToken(user);
 
       return accessTokenData.token;
