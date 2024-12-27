@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Container, Row, Col, Form, Button, Image } from "react-bootstrap";
 import AboutUsImage from "../assets/about-us.png";
 import axios from "axios";
 import getURL from "../axios/network";
 import { SignInResponse, SignUpResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function SignIn() {
   let navigate = useNavigate();
+
+  useEffect(() => {
+    if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
+      navigate("/home");
+    }
+  }, []);
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -33,16 +40,15 @@ function SignIn() {
   const handleSignIn = async () => {
     try {
       const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
-        email: signInUsername,
+        username: signInUsername,
         password: signInPassword,
       });
-      console.log(response);
-      if (response.status === 200) {
-        navigate("/home");
-      }
+      Cookies.set('accessToken', response.data.accessToken, { expires: 7 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7 });
+      navigate("/home");
     }
     catch (error) {
-      console.error(error);
+      setIsSignInValid(false);
     }
     return;
   };
@@ -70,9 +76,10 @@ function SignIn() {
       return;
     }
     setIsSignUpConfirmedPasswordValid(true);
+
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
-        email: "examp@gmail.com",
+        email: "example123@gmail.com",
         username: signUpUsername,
         password: signUpPassword,
       });

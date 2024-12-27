@@ -70,6 +70,24 @@ export async function verifyPassword(email: string, plainTextPassword: string) {
   return passwordHash === hash;
 }
 
+// Verify a user's name and password
+export async function verifyUserNamePassword(username: string, plainTextPassword: string) {
+  const existingUser = await getUserByUsername(username);
+
+  if (!existingUser) {
+    return false;
+  }
+
+  const { passwordHash, pwdSalt } = existingUser;
+
+  if (!passwordHash || !pwdSalt) {
+    return false;
+  }
+
+  const hash = await hashPassword(plainTextPassword, pwdSalt);
+  return passwordHash === hash;
+}
+
 // Set email verification status
 export async function setEmailVerified(userId: number) {
   await database
