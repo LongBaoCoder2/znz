@@ -11,6 +11,7 @@
     "prettier": "npm run format --prefix ../"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "mediasoup-client": "^3.8.1",
     "socket.io-client": "^4.8.1",
     "bootstrap": "^5.3.3",
