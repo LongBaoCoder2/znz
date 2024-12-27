@@ -17,8 +17,10 @@ export class Room {
   name: string;
   url: string;
   createdAt: Date;
-  hostId: number;
   password: string;
+  hostId: number;
+  hostSocketId?: string;
+
 
   // Members: socketId -> member
   members: Map<string, MemberSFU>;
@@ -84,21 +86,61 @@ export class Room {
       return this.members.get(socketId);
   }
 
+  // ================== Member management ==================
   addMember(member: MemberSFU) {
-      if (this.members.size >= this.maxParticipants) {
-          throw new Error('Room is full');
+    if (this.members.size >= this.maxParticipants) {
+      throw new Error('Room is full');
+    }
+
+    const status = this.members.size === 0 ? 'approved' : 'pending';
+    const newMember = {
+      ...member,
+      joinedAt: new Date(),
+      isAudioMuted: false,
+      isVideoMuted: false,
+      status: status as ('pending' | 'approved')
+    };
+
+    if (this.members.size === 0) {
+      newMember.role = 'host';
+      this.hostSocketId = member.socketId;
+    } else {
+      newMember.role = 'participant';
+    }
+
+    this.members.set(member.socketId, newMember);
+    return newMember;
+  }
+
+
+  updateMemberStatus(socketId: string, status: 'approved' | 'rejected') {
+    const member = this.members.get(socketId);
+    if (member) {
+      member.status = status;
+      this.members.set(socketId, member);
+    }
+  }
+
+  // ================== Host management ==================
+  isHost(socketId: string): boolean {
+    return socketId === this.hostSocketId;
+  }
+
+  transferHostRole(currentHostId: string, newHostId: string) {
+    if (!this.isHost(currentHostId)) {
+      throw new Error('Only current host can transfer host role');
+    }
+
+    const newHost = this.members.get(newHostId);
+    if (newHost) {
+      newHost.role = 'host';
+      this.hostSocketId = newHostId;
+      
+      const oldHost = this.members.get(currentHostId);
+      if (oldHost) {
+        oldHost.role = 'participant';
       }
-
-      const newMember = {
-          ...member,
-          role: member.role || 'participant',
-          joinedAt: new Date(),
-          isAudioMuted: false,
-          isVideoMuted: false
-      };
-
-      this.members.set(member.socketId, newMember);
-      return newMember;
+    }
   }
 
   removeMember(socketId: string) {

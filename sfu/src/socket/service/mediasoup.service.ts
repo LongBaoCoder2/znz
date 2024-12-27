@@ -64,8 +64,12 @@ export const checkEmpty = (roomId: string) => {
       sfuLogger.info(`checkEmpty() - there is no room: ${roomId}`);
       return;
     }
-    if(Object.keys(room.members).length == 0){
-        Room.deleteRoom(roomId);
+    // if(Object.keys(room.members).length == 0){
+    //     Room.deleteRoom(roomId);
+    // }
+
+    if (room.members.size === 0) {
+      Room.deleteRoom(roomId);
     }
 }
 
@@ -263,6 +267,7 @@ export const addMember = (roomId: string, member: MemberSFU) => {
     return;
   }
   room.addMember(member);
+  sfuLogger.info("addMember Service: ", room.members);
 }
 
 

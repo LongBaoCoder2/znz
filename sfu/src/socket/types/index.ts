@@ -1,12 +1,13 @@
 import { Socket } from "socket.io";
 
-export type MemberSFU = {
-    socketId: string;
-    username: string;
-    role?: 'host' | 'participant';
-    joinedAt?: Date;
-    isAudioMuted?: boolean;
-    isVideoMuted?: boolean;
+export interface MemberSFU {
+  socketId: string;
+  username: string;
+  role: 'host' | 'participant';
+  status: 'pending' | 'approved' | 'rejected';
+  joinedAt: Date;
+  isAudioMuted: boolean;
+  isVideoMuted: boolean;
 }
 
 export interface RoomMember {
