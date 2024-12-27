@@ -2,7 +2,6 @@ import "dotenv/config";
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { LoginUserDto } from "../dtos/loginUsers.dto";
 import { User } from "../interfaces/users.interface";
-import { createUUID, hashPassword } from "../utils/crypt";
 import { HttpException } from "../exceptions/HttpException";
 import { DataStoredInToken, TokenData } from "../interfaces/auth.interface";
 import { createUser, getUserByEmail, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
@@ -27,18 +26,6 @@ class AuthService {
     return { expiresIn, token: jwt.sign(dataStoredInToken, secretKey, { expiresIn }) };
   }
 
-  // Thiết lập cookie
-  // public setCookie(res: Response, tokenData: TokenData, name: string): void {
-  //   const options = {
-  //     httpOnly: true,
-  //     secure: process.env.NODE_ENV === "production", // Chỉ cho HTTPS
-  //     sameSite: "strict", // Tránh CSRF
-  //     maxAge: tokenData.expiresIn * 1000, // Thời gian sống của cookie
-  //     path: "/"
-  //   };
-  //   res.cookie(name, tokenData.token, options);
-  // }
-
   public async signup(userData: CreateUserDto): Promise<User> {
     const findUser = await getUserByEmail(userData.email);
     if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
@@ -59,7 +46,6 @@ class AuthService {
 
   public async login(
     userData: LoginUserDto,
-    // res: Response
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const findUser = await getUserByUsername(userData.username);
     if (!findUser) throw new HttpException(409, `You're user name ${userData.username} not found`);
@@ -76,18 +62,14 @@ class AuthService {
     const accessTokenData = this.createToken(findUser);
     const refreshTokenData = this.createRefreshToken(findUser);
 
-    // // Lưu token vào cookie
-    // this.setCookie(res, accessTokenData, "AccessToken");
-    // this.setCookie(res, refreshTokenData, "RefreshToken");
-
     return {
-      accessToken: accessTokenData.token,
-      refreshToken: refreshTokenData.token,
       user: {
         id: findUser.id,
         username: findUser.username,
         email: findUser.email
-      }
+      },
+      accessToken: accessTokenData.token,
+      refreshToken: refreshTokenData.token,
     };
   }
 
