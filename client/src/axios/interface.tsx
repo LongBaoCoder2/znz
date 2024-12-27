@@ -1,9 +1,15 @@
 export interface SignInResponse {
-    token: string;
+  user: {
+    id: number,
+    username: string,
+    email: string,
+  },
+  accessToken: string,
+  refreshToken: string,
 }
 
 export interface SignUpResponse {
-    data: any;
-    status: number;
-    message: string;
+  id: number,
+  username: string,
+  email: string,
 }
