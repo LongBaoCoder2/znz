@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Container, Row, Col, Form, Button, Image } from "react-bootstrap";
 import AboutUsImage from "../assets/about-us.png";
 import axios from "axios";
 import getURL from "../axios/network";
 import { SignInResponse, SignUpResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function SignIn() {
   let navigate = useNavigate();
+
+  useEffect(() => {
+    if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
+      navigate("/home");
+    }
+  }, []);
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -36,40 +43,40 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
-      console.log(response);
-      if (response.status === 200) {
-        navigate("/home");
-      }
+      Cookies.set('accessToken', response.data.accessToken, { expires: 7 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7 });
+      navigate("/home");
     }
     catch (error) {
-      console.error(error);
+      setIsSignInValid(false);
     }
     return;
   };
 
   const handleSignUp = async () => {
-    // if (signUpUsername.length < 8) {
-    //   setSignUpUsernameFailedMessage("*Tên đăng nhập phải chứa ít nhất 8 ký tự.");
-    //   setIsSignUpUsernameValid(false);
-    //   return;
-    // }
-    // setIsSignUpUsernameValid(true);
-    // if (!signUpUsername.match(/^[a-zA-Z0-9]+$/)) {
-    //   setSignUpUsernameFailedMessage("*Tên đăng nhập chỉ được chứa các chữ cái thường, chữ cái viết hoa và số!");
-    //   setIsSignUpUsernameValid(false);
-    //   return;
-    // }
-    // setIsSignUpUsernameValid(true);
-    // if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
-    //   setIsSignUpPasswordValid(false);
-    //   return;
-    // }
-    // setIsSignUpPasswordValid(true);
-    // if (signUpPassword !== signupConfirmedPassword) {
-    //   setIsSignUpConfirmedPasswordValid(false);
-    //   return;
-    // }
-    // setIsSignUpConfirmedPasswordValid(true);
+    if (signUpUsername.length < 8) {
+      setSignUpUsernameFailedMessage("*Tên đăng nhập phải chứa ít nhất 8 ký tự.");
+      setIsSignUpUsernameValid(false);
+      return;
+    }
+    setIsSignUpUsernameValid(true);
+    if (!signUpUsername.match(/^[a-zA-Z0-9]+$/)) {
+      setSignUpUsernameFailedMessage("*Tên đăng nhập chỉ được chứa các chữ cái thường, chữ cái viết hoa và số!");
+      setIsSignUpUsernameValid(false);
+      return;
+    }
+    setIsSignUpUsernameValid(true);
+    if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
+      setIsSignUpPasswordValid(false);
+      return;
+    }
+    setIsSignUpPasswordValid(true);
+    if (signUpPassword !== signupConfirmedPassword) {
+      setIsSignUpConfirmedPasswordValid(false);
+      return;
+    }
+    setIsSignUpConfirmedPasswordValid(true);
+
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
         email: "example123@gmail.com",
