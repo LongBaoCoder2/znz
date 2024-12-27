@@ -1,7 +1,7 @@
-export class SendMessageDto {
-    public meetingId: number;
-    public userId: number;
-    public content: string;
-    public toUser: number;
-    public isPinned: boolean;
+export interface SendMessageDto {
+    meetingId: number;
+    userId: number;
+    content: string;
+    toUser: number;
+    isPinned: boolean;
 }
