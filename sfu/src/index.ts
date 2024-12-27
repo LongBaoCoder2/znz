@@ -13,6 +13,7 @@ import messageRoute from "./routes/message.route";
 import profileRoute from "./routes/profile.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
 import AuthRoute from "./routes/auth.route";
+import { setupSocketServer } from "./socket";
 
 const app: Express = express();
 
