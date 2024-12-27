@@ -5,6 +5,8 @@ import AboutUsImage from "../assets/about-us.png";
 function SignUp() {
   const [fullName, setFullName] = useState("");
   const [isFullNameValid, setIsFullNameValid] = useState(true);
+  const [displayName, setDisplayName] = useState("");
+  const [isDisplayNameValid, setIsDisplayNameValid] = useState(true);
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -47,7 +49,7 @@ function SignUp() {
           <h1 className="align-self-start mt-5 ms-5 text-primary">
             ZNZ
           </h1>
-          <h2 className="text-primary my-5">
+          <h2 className="text-primary my-4">
             Đăng ký
           </h2>
           <span className="mb-4">
@@ -63,11 +65,29 @@ function SignUp() {
                 onChange={e => {
                   setIsFullNameValid(true);
                   setFullName(e.target.value);
+                  setDisplayName(e.target.value);
                 }}
               />
               {!isFullNameValid && (
                 <Form.Text className="text-danger">
                   *Họ và tên không được để trống
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-medium">Tên hiển thị</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Họ và tên"
+                value={displayName}
+                onChange={e => {
+                  setIsDisplayNameValid(true);
+                  setDisplayName(e.target.value);
+                }}
+              />
+              {!isDisplayNameValid && (
+                <Form.Text className="text-danger">
+                  *Tên hiển thị không được để trống
                 </Form.Text>
               )}
             </Form.Group>

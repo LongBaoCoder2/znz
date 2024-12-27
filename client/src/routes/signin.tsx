@@ -10,11 +10,11 @@ import Cookies from "js-cookie";
 function SignIn() {
   let navigate = useNavigate();
 
-  useEffect(() => {
-    if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
-      navigate("/home");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
+  //     navigate("/home");
+  //   }
+  // }, []);
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -43,8 +43,8 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
-      Cookies.set('accessToken', response.data.accessToken, { expires: 7 });
-      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7 });
+      Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
       navigate("/home");
     }
     catch (error) {
