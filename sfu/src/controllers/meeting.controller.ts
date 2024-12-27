@@ -30,7 +30,32 @@ const meetingController = {
             message: "Error when creating meeting.",
         });
     }
-  }
+  },
+
+  joinMeetingHandler: async (req: Request, res: Response) => {
+    try {
+      const { meetingId, password } = req.body;
+      const meetingService = new MeetingService();
+
+      const result = await meetingService.checkMeetingPassword(meetingId, password);
+
+      if (result.requiresPassword) {
+        return res.status(401).json({
+          message: "Password required",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Successfully joined meeting",
+        meeting: result.meeting,
+      });
+    } catch (error: any) {
+      sfuLogger.error("Error joining meeting: ", error);
+      res.status(500).json({
+        message: error.message || "Error when joining meeting.",
+      });
+    }
+  },
 };
 
 export default meetingController;

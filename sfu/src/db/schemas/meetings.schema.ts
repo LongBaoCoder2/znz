@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { meetingStatusEnum } from "./enums";
 import { user } from "./user.schema";
 
@@ -13,5 +13,6 @@ export const meetings = pgTable("meetings", {
     .notNull()
     .references(() => user.id),
   createdAt: timestamp("created_at"),
-  status: meetingStatusEnum("status").default("created")
+  status: meetingStatusEnum("status").default("created"),
+  hasCustomPassword: boolean("has_custom_password").default(false)
 });
