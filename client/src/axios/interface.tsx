@@ -9,7 +9,19 @@ export interface SignInResponse {
 }
 
 export interface SignUpResponse {
+  data: {
+    id: number,
+    username: string,
+  },
+  status: number,
+  message: string,
+}
+
+export interface CreateProfileResponse {
   id: number,
-  username: string,
-  email: string,
+  displayName: string,
+  avatarUrl: string,
+  createdAt: any,
+  lastLoginAt: any,
+  userId: number,
 }

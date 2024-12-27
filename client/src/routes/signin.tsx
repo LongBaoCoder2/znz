@@ -79,7 +79,6 @@ function SignIn() {
 
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
-        email: "example123@gmail.com",
         username: signUpUsername,
         password: signUpPassword,
       });
@@ -89,6 +88,8 @@ function SignIn() {
       }
     }
     catch (error) {
+      setSignUpUsernameFailedMessage("*Tên đăng nhập đã tồn tại, vui lòng chọn tên đăng nhập khác!");
+      setIsSignUpUsernameValid(false);
       console.error(error);
     }
   };
