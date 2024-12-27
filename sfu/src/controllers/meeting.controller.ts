@@ -17,6 +17,7 @@ const meetingController = {
 
       const { roomId, newMeeting } = await meetingService.createMeeting(id, username, meetingDto);
       res.status(201).json({
+        id: newMeeting.id,
         roomId,
         title: newMeeting.title,
         displayId: newMeeting.displayId,
@@ -32,10 +33,10 @@ const meetingController = {
     }
   },
 
-  jjoinMeetingHandler: async (req: Request, res: Response) => {
+  joinMeetingHandler: async (req: Request, res: Response) => {
     try {
-      const { meetingId } = req.body; // Chỉ nhận meetingId từ request
-      const { password } = req.query; // Lấy password từ query nếu có
+      const { meetingId } = req.body; 
+      const { password } = req.body; 
       const meetingService = new MeetingService();
 
       // Kiểm tra cuộc họp và mật khẩu

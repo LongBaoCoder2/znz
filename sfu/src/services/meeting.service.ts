@@ -31,6 +31,7 @@ class MeetingService {
       const meeting = await getMeetingById(meetingId);
 
       if (!meeting) {
+        console.log(meetingId);
         throw new Error("Meeting not found");
       }
 
