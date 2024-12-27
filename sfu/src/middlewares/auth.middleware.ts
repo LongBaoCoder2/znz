@@ -24,7 +24,6 @@ const authMiddleware = async (
         const payload = {
           id: userId,
           username: findUser.username,
-          email: findUser.email
         };
         (req as RequestWithUser).user = payload;
         next();
