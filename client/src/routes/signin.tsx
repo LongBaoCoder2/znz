@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Container, Row, Col, Form, Button, Image } from "react-bootstrap";
 import AboutUsImage from "../assets/about-us.png";
+import axios from "axios";
+import getURL from "../axios/network";
+import { SignInResponse, SignUpResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function SignIn() {
   let navigate = useNavigate();
+
+  useEffect(() => {
+    if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
+      navigate("/home");
+    }
+  }, []);
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -24,15 +34,26 @@ function SignIn() {
   const signUpConfirmedPasswordFailedMessage = "*Mật khẩu không khớp!";
 
   const [signUpUsername, setSignUpUsername] = useState("");
-  const [signupPassword, setSignUpPassword] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
   const [signupConfirmedPassword, setSignUpConfirmedPassword] = useState("");
 
-  const handleSignIn = () => {
-    setIsSignInValid(!isSignInValid);
+  const handleSignIn = async () => {
+    try {
+      const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
+        username: signInUsername,
+        password: signInPassword,
+      });
+      Cookies.set('accessToken', response.data.accessToken, { expires: 7 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7 });
+      navigate("/home");
+    }
+    catch (error) {
+      setIsSignInValid(false);
+    }
     return;
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (signUpUsername.length < 8) {
       setSignUpUsernameFailedMessage("*Tên đăng nhập phải chứa ít nhất 8 ký tự.");
       setIsSignUpUsernameValid(false);
@@ -45,21 +66,35 @@ function SignIn() {
       return;
     }
     setIsSignUpUsernameValid(true);
-    if (signupPassword.length < 8 || !signupPassword.match(/[a-z]/) || !signupPassword.match(/[A-Z]/) || !signupPassword.match(/[0-9]/)) {
+    if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
       setIsSignUpPasswordValid(false);
       return;
     }
     setIsSignUpPasswordValid(true);
-    if (signupPassword !== signupConfirmedPassword) {
+    if (signUpPassword !== signupConfirmedPassword) {
       setIsSignUpConfirmedPasswordValid(false);
       return;
     }
     setIsSignUpConfirmedPasswordValid(true);
-    navigate("/signup");
+
+    try {
+      const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
+        email: "example123@gmail.com",
+        username: signUpUsername,
+        password: signUpPassword,
+      });
+      console.log(response);
+      if (response.status === 201) {
+        navigate("/signup");
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <Container fluid>
+    <Container fluid className="vw-100">
       <Row>
         {isSignIn ? (
           <Col className="d-flex flex-column justify-content-start align-items-center">
@@ -198,7 +233,7 @@ function SignIn() {
                 <Form.Control
                   type="password"
                   placeholder="Mật khẩu"
-                  value={signupPassword}
+                  value={signUpPassword}
                   onChange={e => {
                     setIsSignUpPasswordValid(true);
                     setSignUpPassword(e.target.value);

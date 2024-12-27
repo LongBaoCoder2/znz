@@ -3,6 +3,7 @@ import path from "path";
 import { config } from "@sfu/core/config";
 
 import https from "https";
+import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
@@ -11,14 +12,14 @@ import meetingRoute from "./routes/meeting.route";
 import messageRoute from "./routes/message.route";
 import profileRoute from "./routes/profile.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
-import { setupSocketServer } from "./socket";
+import AuthRoute from "./routes/auth.route";
 
 const app: Express = express();
 
-const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
-const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
-const server = https.createServer({ key, cert }, app);
-
+const key = fs.readFileSync(path.join(__dirname, "../ssl/localhost.key"), "utf-8");
+const cert = fs.readFileSync(path.join(__dirname, "../ssl/localhost.crt"), "utf-8");
+// const server = https.createServer({ key, cert }, app);
+const server = http.createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -31,11 +32,13 @@ app.use(loggingMiddleware);
 app.use(errorMiddleware);
 
 /* ================= Define route ================= */
+const authRoute = (new AuthRoute()).router;
 app.use("/api", homeRoute);
 
 app.use("/api", meetingRoute);
 
 app.use("/api", messageRoute);
+app.use("/api", authRoute);
 
 app.use("/api", profileRoute);
 
