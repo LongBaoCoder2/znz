@@ -3,6 +3,7 @@ import path from "path";
 import { config } from "@sfu/core/config";
 
 import https from "https";
+import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
@@ -13,14 +14,17 @@ import { setupSocketServer } from "./socket";
 
 const app: Express = express();
 
-const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
-const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
-const server = https.createServer({ key, cert }, app);
+// const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
+// const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
+// const server = https.createServer({ key, cert }, app);
+const server = http.createServer(app);
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
+
 
 // Middleware log tất cả request
 app.use(loggingMiddleware);
