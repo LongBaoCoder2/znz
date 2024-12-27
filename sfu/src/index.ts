@@ -9,6 +9,7 @@ import express, { Express } from "express";
 import homeRoute from "./routes/home.route";
 import meetingRoute from "./routes/meeting.route";
 import messageRoute from "./routes/message.route";
+import profileRoute from "./routes/profile.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
 import { setupSocketServer } from "./socket";
 
@@ -36,6 +37,7 @@ app.use("/api", meetingRoute);
 
 app.use("/api", messageRoute);
 
+app.use("/api", profileRoute);
 
 
 server.listen(config.listenPort, serverListenHandler(config.listenPort));
