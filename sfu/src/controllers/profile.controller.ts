@@ -1,38 +1,32 @@
 import { Request, Response } from "express";
 import { childLogger } from "@sfu/core/logger";
-import multer from 'multer';
+import path from 'path';
+import { readFileSync } from 'fs';
 import ProfileService from "@sfu/services/profile.service";
-import { UpdateDisplayNameDto, CreateProfileDto } from "@sfu/dtos/profile.dto";
+import { ProfileDto } from "@sfu/dtos/profile.dto";
+import { RequestWithUser } from "@sfu/interfaces/auth.interface";
+import { updateProfile } from "@sfu/data-access/profile";
 
 const sfuLogger = childLogger("sfu");
 
 const profileController = {
   createProfileHandler: async (req: Request, res: Response) => {
-    try {
-      const createProfileDto : CreateProfileDto = req.body;
-
-      // Handle avatarUrl if it was uploaded
-      let avatarUrl: string | undefined;
-      if (req.file) {
-          // Assuming you're serving static files from the 'uploads' directory
-          avatarUrl = `/uploads/${req.file.filename}`; // This is the relative URL
-      }
+    try { 
+      const userId = (req as RequestWithUser).user.id;
+      const createProfileDto : ProfileDto = req.body;
 
       const profileService = new ProfileService();
-      const newProfile = await profileService.createProfile(createProfileDto, avatarUrl);
+      const newProfile = await profileService.createProfile(userId, createProfileDto);
 
       res.status(201).json({
-          message: "Profile created successfully.",
-          data: newProfile,
+        message: "Profile created successfully.",
+        data: newProfile,
       });
     } catch (error: any) {
       sfuLogger.error("Error creating profile: ", error);
 
-      const statusCode = (error.message === "Invalid userId.") ? 400 :
-                        (error instanceof multer.MulterError) ? 415 : 500;
-
-      const errorMessage = (statusCode === 415) ? "Only image files are allowed." :
-                          (statusCode === 400) ? "Invalid userId." : "Error creating profile.";
+      const statusCode = 500;
+      const errorMessage = "Error creating profile.";
 
       res.status(statusCode).json({
         message: errorMessage,
@@ -40,81 +34,116 @@ const profileController = {
     }
   },
 
-    getProfileByUserIdHandler: async (req: Request, res: Response) => {
-        try {
-            const userId = parseInt(req.params.userId, 10);
+  getProfileByUserIdHandler: async (req: Request, res: Response) => {
+    try {
+        const userId = (req as RequestWithUser).user.id;
 
-            const profileService = new ProfileService();
-            const profile = await profileService.getProfileByUserId(userId);
+        const profileService = new ProfileService();
+        const profile = await profileService.getProfileByUserId(userId);
 
-            res.status(200).json({
-                message: "Profile retrieved successfully.",
-                data: profile,
-              });
+        res.status(200).json({
+            message: "Profile retrieved successfully.",
+            data: profile,
+          });
 
-        } catch (error: any) {
-            sfuLogger.error("Error retrieving profile: ", error);
+    } catch (error: any) {
+        sfuLogger.error("Error retrieving profile: ", error);
 
-            const statusCode = error.message === "Invalid userId." ? 400 : 500;
-            const errorMessage = statusCode === 400
-              ? "Invalid userId."
-              : "Error getting profile.";
-      
-            res.status(statusCode).json({
-              message: errorMessage,
-            });
+        const statusCode = error.message === "Invalid userId." ? 400 : 500;
+        const errorMessage = statusCode === 400
+          ? "Invalid userId."
+          : "Error getting profile.";
+  
+        res.status(statusCode).json({
+          message: errorMessage,
+        });
+    }
+  },
+
+  updateAvatarHandler: async (req: Request, res: Response) => {
+    try {
+      const userId = (req as RequestWithUser).user.id;
+
+      if (!req.files) {
+        res.status(400).json({
+          message: "Must have file!",
+        });
+        return;
+      }
+
+      const profileService = new ProfileService();
+
+      const profile = profileService.getProfileByUserId(userId);
+      if (!profile) {
+        res.status(409).json({
+          message: "Invalid userId!",
+        });
+        return;
+      }
+
+      if (req.file) {
+        const avatarUrl = path.join("/uploads/", req.file.filename);
+        
+        
+        await profileService.updateAvatarUrlByUserId(userId, avatarUrl);
+        
+        const fileContent = readFileSync(avatarUrl, 'base64');
+
+        res.status(200).json({
+          message: "Avatar updated successfully.",
+          data: fileContent,
+        });
+      }
+    } catch (error: any) {
+      sfuLogger.error("Error updating avatar: ", error);
+
+      const statusCode = 500;
+      const errorMessage = "Error updating avatar.";
+
+      res.status(statusCode).json({
+        message: errorMessage,
+      });
+    }
+  },
+
+    updateProfileHandler: async (req: Request, res: Response) => {
+      try {
+        const userId = (req as RequestWithUser).user.id;
+
+        const profileService = new ProfileService();
+        const profile = await profileService.getProfileByUserId(userId);
+        if (!profile) {
+          res.status(409).json({
+            message: "Invalid userId!",
+          });
+          return;
         }
-    },
 
-    updateLastLoginHandler: async (req: Request, res: Response) => {
-        try {
-            const profileId = parseInt(req.params.profileId, 10);
+        const profileId = profile.id;
 
-            const profileService = new ProfileService();
-            await profileService.updateLastLogin(profileId);
-
-            res.status(200).json({
-                message: "Profile updated successfully.",
-              });
-
-        } catch (error: any) {
-            sfuLogger.error("Error updating profile: ", error);
-
-            const statusCode = error.message === "Invalid profileId." ? 400 : 500;
-            const errorMessage = statusCode === 400
-              ? "Invalid profileId."
-              : "Error updating profile.";
-      
-            res.status(statusCode).json({
-              message: errorMessage,
-            });
+        const newData = {
+          displayName: req.body.displayName,
+          fullname: req.body.fullName,
+          email: req.body.email,
+          phoneNumber: req.body.phoneNumber,
         }
-    },
 
-    updateDisplayNameHandler: async (req: Request, res: Response) => {
-        try {
-            const profileId = parseInt(req.params.profileId, 10);
-            const updateDisplayNameDto : UpdateDisplayNameDto = req.body;
+        await updateProfile(profileId, newData);
 
-            const profileService = new ProfileService();
-            await profileService.updateDisplayName(profileId, updateDisplayNameDto);
+        res.status(200).json({
+            message: "Profile updated successfully.",
+          });
 
-            res.status(200).json({
-                message: "Profile updated successfully.",
-              });
+      } catch (error: any) {
+          sfuLogger.error("Error updating profile: ", error);
 
-        } catch (error: any) {
-            sfuLogger.error("Error updating profile: ", error);
-
-            const statusCode = error.message === "Invalid profileId." ? 400 : 500;
-            const errorMessage = statusCode === 400
-              ? "Invalid profileId."
-              : "Error updating profile.";
-      
-            res.status(statusCode).json({
-              message: errorMessage,
-            });
-        }
+          const statusCode = 500;
+          const errorMessage = "Error updating profile.";
+    
+          res.status(statusCode).json({
+            message: errorMessage,
+          });
+      }
     },
 };
 
