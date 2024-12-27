@@ -1,11 +1,45 @@
 import { Request, Response } from "express";
 import { childLogger } from "@sfu/core/logger";
+import multer from 'multer';
 import ProfileService from "@sfu/services/profile.service";
-import { UpdateDisplayNameDto } from "@sfu/dtos/profile.dto";
+import { UpdateDisplayNameDto, CreateProfileDto } from "@sfu/dtos/profile.dto";
 
 const sfuLogger = childLogger("sfu");
 
 const profileController = {
+  createProfileHandler: async (req: Request, res: Response) => {
+    try {
+      const createProfileDto : CreateProfileDto = req.body;
+
+      // Handle avatarUrl if it was uploaded
+      let avatarUrl: string | undefined;
+      if (req.file) {
+          // Assuming you're serving static files from the 'uploads' directory
+          avatarUrl = `/uploads/${req.file.filename}`; // This is the relative URL
+      }
+
+      const profileService = new ProfileService();
+      const newProfile = await profileService.createProfile(createProfileDto, avatarUrl);
+
+      res.status(201).json({
+          message: "Profile created successfully.",
+          data: newProfile,
+      });
+    } catch (error: any) {
+      sfuLogger.error("Error creating profile: ", error);
+
+      const statusCode = (error.message === "Invalid userId.") ? 400 :
+                        (error instanceof multer.MulterError) ? 415 : 500;
+
+      const errorMessage = (statusCode === 415) ? "Only image files are allowed." :
+                          (statusCode === 400) ? "Invalid userId." : "Error creating profile.";
+
+      res.status(statusCode).json({
+        message: errorMessage,
+      });
+    }
+  },
+
     getProfileByUserIdHandler: async (req: Request, res: Response) => {
         try {
             const userId = parseInt(req.params.userId, 10);
