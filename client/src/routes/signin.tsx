@@ -33,7 +33,7 @@ function SignIn() {
   const handleSignIn = async () => {
     try {
       const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
-        email: signInUsername,
+        username: signInUsername,
         password: signInPassword,
       });
       console.log(response);
@@ -48,31 +48,31 @@ function SignIn() {
   };
 
   const handleSignUp = async () => {
-    if (signUpUsername.length < 8) {
-      setSignUpUsernameFailedMessage("*Tên đăng nhập phải chứa ít nhất 8 ký tự.");
-      setIsSignUpUsernameValid(false);
-      return;
-    }
-    setIsSignUpUsernameValid(true);
-    if (!signUpUsername.match(/^[a-zA-Z0-9]+$/)) {
-      setSignUpUsernameFailedMessage("*Tên đăng nhập chỉ được chứa các chữ cái thường, chữ cái viết hoa và số!");
-      setIsSignUpUsernameValid(false);
-      return;
-    }
-    setIsSignUpUsernameValid(true);
-    if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
-      setIsSignUpPasswordValid(false);
-      return;
-    }
-    setIsSignUpPasswordValid(true);
-    if (signUpPassword !== signupConfirmedPassword) {
-      setIsSignUpConfirmedPasswordValid(false);
-      return;
-    }
-    setIsSignUpConfirmedPasswordValid(true);
+    // if (signUpUsername.length < 8) {
+    //   setSignUpUsernameFailedMessage("*Tên đăng nhập phải chứa ít nhất 8 ký tự.");
+    //   setIsSignUpUsernameValid(false);
+    //   return;
+    // }
+    // setIsSignUpUsernameValid(true);
+    // if (!signUpUsername.match(/^[a-zA-Z0-9]+$/)) {
+    //   setSignUpUsernameFailedMessage("*Tên đăng nhập chỉ được chứa các chữ cái thường, chữ cái viết hoa và số!");
+    //   setIsSignUpUsernameValid(false);
+    //   return;
+    // }
+    // setIsSignUpUsernameValid(true);
+    // if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
+    //   setIsSignUpPasswordValid(false);
+    //   return;
+    // }
+    // setIsSignUpPasswordValid(true);
+    // if (signUpPassword !== signupConfirmedPassword) {
+    //   setIsSignUpConfirmedPasswordValid(false);
+    //   return;
+    // }
+    // setIsSignUpConfirmedPasswordValid(true);
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
-        email: "examp@gmail.com",
+        email: "example123@gmail.com",
         username: signUpUsername,
         password: signUpPassword,
       });
