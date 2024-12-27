@@ -1,8 +1,6 @@
-export interface CreateProfileDto {
-    userId: number;
+export interface ProfileDto {
     displayName: string;
-}
-
-export interface UpdateDisplayNameDto {
-    newDisplayName: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
 }

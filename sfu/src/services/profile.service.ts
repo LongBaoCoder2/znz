@@ -1,15 +1,13 @@
-import { UpdateDisplayNameDto, CreateProfileDto } from "@sfu/dtos/profile.dto";
-import { createProfile, getProfileById, updateLastLogin, updateDisplayName } from "@sfu/data-access/profile";
+import { ProfileDto } from "@sfu/dtos/profile.dto";
+import { createProfile, updateAvatarUrlByUserId, getProfileByUserId, updateLastLogin, updateProfile } from "@sfu/data-access/profile";
+import { profile } from "@sfu/db/schemas/profile.schema";
 
 class ProfileService {
-    async createProfile(createProfileDto: CreateProfileDto, avatarUrl: string | undefined) {
+    async createProfile(userId: number, createProfileDto: ProfileDto) {
         try {
-            const { userId, displayName} = createProfileDto;
-            if (isNaN(userId)) {
-                throw new Error("Invalid userId.");
-            }
+            const { displayName, fullName, email, phoneNumber } = createProfileDto;
 
-            const profile = await createProfile(userId, displayName, avatarUrl);
+            const profile = await createProfile(userId, displayName, fullName, email, phoneNumber);
 
             return profile;
         } catch (error: any) {
@@ -19,13 +17,32 @@ class ProfileService {
 
     async getProfileByUserId(userId: number) {
         try {
-            if (isNaN(userId)) {
-                throw new Error("Invalid userId.");
-            }
-
-            const profile = await getProfileById(userId);
+            const profile = await getProfileByUserId(userId);
 
             return profile;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async updateAvatarUrlByUserId(userId: number, newAvatarUrl: string) {
+        try {
+            await updateAvatarUrlByUserId(userId, newAvatarUrl);
+            return;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async updateProfile(profileId: number, profileData: Partial<typeof profile>) {
+        try {
+            if (isNaN(profileId)) {
+                throw new Error("Invalid profileId.");
+            }
+
+            await updateProfile(profileId, profileData);
+
+            return;
         } catch (error: any) {
             throw new Error(error.message);
         }
@@ -38,22 +55,6 @@ class ProfileService {
             }
 
             await updateLastLogin(profileId);
-
-            return;
-        } catch (error: any) {
-            throw new Error(error.message);
-        }
-    }
-
-    async updateDisplayName(profileId: number, updateDisplayNameDto: UpdateDisplayNameDto) {
-        try {
-            const { newDisplayName } = updateDisplayNameDto;
-
-            if (isNaN(profileId)) {
-                throw new Error("Invalid profileId.");
-            }
-
-            await updateDisplayName(profileId, newDisplayName);
 
             return;
         } catch (error: any) {

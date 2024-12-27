@@ -1,13 +1,16 @@
 import profileController from "@sfu/controllers/profile.controller";
 import { Router } from "express";
 import upload from "@sfu/middlewares/filehandler";
+import authMiddleware from "@sfu/middlewares/auth.middleware";
 
 const path = "/profile/";
 const profileRoute = Router();
 
-profileRoute.post(path, upload.single('avatar'), profileController.createProfileHandler);
-profileRoute.get(path + "userid/:userId", profileController.getProfileByUserIdHandler);
-profileRoute.patch(path + "profileId/:profileId/lastlogin", profileController.updateLastLoginHandler);
-profileRoute.patch(path + "/profileId/:profileId/displayname", profileController.updateDisplayNameHandler);
+profileRoute.post(path, authMiddleware, profileController.createProfileHandler);
+profileRoute.get(path, authMiddleware, profileController.getProfileByUserIdHandler);
+profileRoute.patch(path + "avatar", authMiddleware, upload.single('avatar'), profileController.updateAvatarHandler);
+profileRoute.patch(path, authMiddleware, profileController.updateProfileHandler);
+profileRoute.patch(path, authMiddleware, profileController.updateProfileHandler);
+
 
 export default profileRoute;
