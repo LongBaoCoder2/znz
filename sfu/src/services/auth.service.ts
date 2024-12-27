@@ -6,7 +6,9 @@ import { HttpException } from "../exceptions/HttpException";
 import { DataStoredInToken, TokenData } from "../interfaces/auth.interface";
 import { createUser, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
 import jwt from "jsonwebtoken";
+import { childLogger } from "@sfu/core/logger";
 
+const sfuLogger = childLogger("sfu");
 class AuthService {
   // Tạo refresh token
   public createRefreshToken(user: User): TokenData {
@@ -20,10 +22,12 @@ class AuthService {
   // acccess token
   public createToken(user: User): TokenData {
     const dataStoredInToken: DataStoredInToken = { _id: user.id };
-    const secretKey: string = process.env.SECRECT_KEY || "Hi";
+    const secretKey: string = process.env.SECRECT_KEY || "HI";
+    sfuLogger.info("createToken - secretKey: " + secretKey);
     const expiresIn: number = 15 * 60; // 15p
-
-    return { expiresIn, token: jwt.sign(dataStoredInToken, secretKey, { expiresIn }) };
+    const token = jwt.sign(dataStoredInToken, secretKey, { expiresIn });
+    sfuLogger.info(`token: ${token}`);
+    return { expiresIn, token: token };
   }
 
   public async signup(userData: CreateUserDto): Promise<User> {
@@ -43,7 +47,7 @@ class AuthService {
 
   public async login(
     userData: LoginUserDto,
-  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+  ): Promise<{ accessToken: string; refreshToken: string; user: User; }> {
     const findUser = await getUserByUsername(userData.username);
     if (!findUser) throw new HttpException(409, `You're user name ${userData.username} not found`);
 
@@ -69,7 +73,7 @@ class AuthService {
     };
   }
 
-  public async logout(userData: User): Promise<{ message: string }> {
+  public async logout(userData: User): Promise<{ message: string; }> {
     if (!userData.username) {
       throw new HttpException(409, `Username is not valid`);
     }

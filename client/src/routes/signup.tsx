@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button, Image, Modal } from "react-bootstrap";
 import AboutUsImage from "../assets/about-us.png";
+import axios from "axios";
+import getURL from "../axios/network";
+import { CreateProfileResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function SignUp() {
   const [fullName, setFullName] = useState("");
@@ -13,13 +17,40 @@ function SignUp() {
 
   const [modalShow, setModalShow] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (fullName.length === 0) {
       setIsFullNameValid(false);
       return;
     }
-    setIsFullNameValid(true);
-    setIsEmailValid(!isEmailValid);
+    if (displayName.length === 0) {
+      setIsDisplayNameValid(false);
+      return;
+    }
+    if (email.length === 0) {
+      setIsEmailValid(false);
+      return;
+    }
+    try {
+
+      const accessToken = Cookies.get("accessToken");
+      console.log(accessToken);
+      const response = await axios.post<CreateProfileResponse>(getURL("/profile"), {
+        displayName: displayName,
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+      },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        }
+      );
+      console.log(response);
+    }
+    catch (error) {
+      console.error(error);
+    }
 
     setModalShow(true);
   };

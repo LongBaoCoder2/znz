@@ -10,6 +10,7 @@ import Cookies from "js-cookie";
 function SignIn() {
   let navigate = useNavigate();
 
+
   // useEffect(() => {
   //   if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
   //     navigate("/home");
@@ -43,8 +44,12 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
+      console.log(Cookies.get('accessToken'));
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
       Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
       Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
+      console.log(Cookies.get('accessToken'));
       navigate("/home");
     }
     catch (error) {
@@ -84,6 +89,14 @@ function SignIn() {
       });
       console.log(response);
       if (response.status === 201) {
+        const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
+          username: signUpUsername,
+          password: signUpPassword,
+        });
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
+        Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
         navigate("/signup");
       }
     }

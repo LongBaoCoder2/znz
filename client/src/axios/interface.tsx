@@ -18,10 +18,33 @@ export interface SignUpResponse {
 }
 
 export interface CreateProfileResponse {
-  id: number,
-  displayName: string,
-  avatarUrl: string,
-  createdAt: any,
-  lastLoginAt: any,
-  userId: number,
+  data: {
+    id: number,
+    displayName: string,
+    fullName: string,
+    email: string,
+    phoneNumber: string,
+    avatarUrl: string,
+    createdAt: string,
+    lastLoginAt: string,
+    userId: number,
+  },
+  status: number,
+  message: string,
+}
+
+export interface GetProfileResponse {
+  data: {
+    id: number,
+    displayName: string,
+    fullName: string,
+    email: string,
+    phoneNumber: string,
+    avatarUrl: string,
+    createdAt: string,
+    lastLoginAt: string,
+    userId: number,
+  },
+  status: number,
+  message: string,
 }
