@@ -35,7 +35,7 @@ class AuthController {
         message: "Login successful",
         user: {
           id: user.id,
-          username: user.username,
+          username: user.username
         },
         accessToken,
         refreshToken

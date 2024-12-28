@@ -16,11 +16,10 @@ export async function hashPassword(plainTextPassword: string, salt: string) {
   });
 }
 
-
 export function generateMeetingID() {
   const uuid = uuidv4();
-  const randomString = uuid.replace(/-/g, '').slice(0, 9);
-  const meetingID = randomString.replace(/(.{3})/g, '$1-').slice(0, -1);
+  const randomString = uuid.replace(/-/g, "").slice(0, 9);
+  const meetingID = randomString.replace(/(.{3})/g, "$1-").slice(0, -1);
 
   return meetingID;
 }

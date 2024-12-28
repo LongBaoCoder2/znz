@@ -1,5 +1,5 @@
 export interface CreateMeetingDto {
-    title?: string;
-    displayId: string;
-    password?: string;
+  title?: string;
+  displayId: string;
+  password?: string;
 }

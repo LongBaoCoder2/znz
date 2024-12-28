@@ -35,21 +35,20 @@ export async function createMeeting(
       uri,
       host: hostId,
       createdAt: new Date(),
-      status: "created",
+      status: "created"
     })
     .returning();
 
   await database.insert(meetingMember).values({
     meetingId: newMeeting.id,
     userId: hostId,
-    displayName: hostName, 
+    displayName: hostName,
     joinedAt: new Date(),
-    role: "host", 
+    role: "host"
   });
 
   return newMeeting;
 }
-
 
 // Get a meeting by its ID
 export async function getMeetingById(meetingId: number) {

@@ -31,12 +31,9 @@ class AuthService {
   }
 
   public async signup(userData: CreateUserDto): Promise<User> {
-
     const findUserByUsername = await getUserByUsername(userData.username);
     if (findUserByUsername) throw new HttpException(409, `You're username ${userData.username} already exists`);
-    console.log(
-      `userData.username: ${userData.username} - userData.password: ${userData.password}`
-    );
+    console.log(`userData.username: ${userData.username} - userData.password: ${userData.password}`);
     const createUserData: User = await createUser(userData.username, userData.password);
 
     return {
@@ -45,9 +42,7 @@ class AuthService {
     };
   }
 
-  public async login(
-    userData: LoginUserDto,
-  ): Promise<{ accessToken: string; refreshToken: string; user: User; }> {
+  public async login(userData: LoginUserDto): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const findUser = await getUserByUsername(userData.username);
     if (!findUser) throw new HttpException(409, `You're user name ${userData.username} not found`);
 
@@ -66,14 +61,14 @@ class AuthService {
     return {
       user: {
         id: findUser.id,
-        username: findUser.username,
+        username: findUser.username
       },
       accessToken: accessTokenData.token,
-      refreshToken: refreshTokenData.token,
+      refreshToken: refreshTokenData.token
     };
   }
 
-  public async logout(userData: User): Promise<{ message: string; }> {
+  public async logout(userData: User): Promise<{ message: string }> {
     if (!userData.username) {
       throw new HttpException(409, `Username is not valid`);
     }

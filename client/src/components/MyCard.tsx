@@ -18,10 +18,10 @@
 //   }, [videoRef, cameraOn]);
 
 //   return (
-//     <Card className="position-relative h-100" style={{ 
+//     <Card className="position-relative h-100" style={{
 //       backgroundColor: "#1E2757",
 //       border: "none",
-//       maxHeight: "calc(90vh - 2rem)" 
+//       maxHeight: "calc(90vh - 2rem)"
 //     }}>
 //       {cameraOn ? (
 //         <video
@@ -41,24 +41,21 @@
 //           <PersonFill size={72} color="#6c757d"/>
 //         </div>
 //       )}
-      
+
 //       <div className="position-absolute bottom-0 w-100 d-flex justify-content-between p-2"
-//            style={{ 
+//            style={{
 //              background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
 //              borderBottomLeftRadius: "0.5rem",
 //              borderBottomRightRadius: "0.5rem"
 //            }}>
 //         <span className="text-white">{username} (You)</span>
-//         {micOn ? 
-//           <MicFill color="white" size={16} /> : 
+//         {micOn ?
+//           <MicFill color="white" size={16} /> :
 //           <MicMuteFill color="red" size={16} />
 //         }
 //       </div>
 //     </Card>
 //   );
 // };
-
-
-
 
 // export default MyCard;

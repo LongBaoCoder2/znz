@@ -22,12 +22,10 @@ const app: Express = express();
 // const server = https.createServer({ key, cert }, app);
 const server = http.createServer(app);
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
-
 
 // Middleware log tất cả request
 app.use(loggingMiddleware);
@@ -36,7 +34,7 @@ app.use(loggingMiddleware);
 app.use(errorMiddleware);
 
 /* ================= Define route ================= */
-const authRoute = (new AuthRoute()).router;
+const authRoute = new AuthRoute().router;
 app.use("/api", homeRoute);
 
 app.use("/api", meetingRoute);
@@ -45,7 +43,6 @@ app.use("/api", messageRoute);
 app.use("/api", authRoute);
 
 app.use("/api", profileRoute);
-
 
 server.listen(config.listenPort, serverListenHandler(config.listenPort));
 

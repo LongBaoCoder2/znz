@@ -2,9 +2,9 @@
 module.exports = {
   testEnvironment: "node",
   transform: {
-    "^.+.tsx?$": ["ts-jest",{}],
+    "^.+.tsx?$": ["ts-jest", {}]
   },
   moduleNameMapper: {
-    '^@sfu/(.*)$': '<rootDir>/src/$1',
-  },
+    "^@sfu/(.*)$": "<rootDir>/src/$1"
+  }
 };

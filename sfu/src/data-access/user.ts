@@ -43,7 +43,6 @@ export async function updateUserById(userId: number, updatedFields: Partial<type
   await database.update(user).set(updatedFields).where(eq(user.id, userId));
 }
 
-
 // Verify a user's name and password
 export async function verifyUserNamePassword(username: string, plainTextPassword: string) {
   const existingUser = await getUserByUsername(username);

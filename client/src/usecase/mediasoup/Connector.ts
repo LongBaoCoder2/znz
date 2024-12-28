@@ -12,11 +12,7 @@ interface ConnectorEvents {
   onJoinRequest?: (request: JoinRequest) => void;
   onJoinRequestApproved?: () => void;
   onJoinRequestRejected?: () => void;
-  onMemberJoined?: (member: {
-    username: string,
-    socketId: string,
-    joinedAt: Date
-  }) => void;
+  onMemberJoined?: (member: { username: string; socketId: string; joinedAt: Date }) => void;
   onMemberLeft?: (socketId: string) => void;
   onHostChanged?: () => void;
   onNewProducer?: () => void;
@@ -24,17 +20,17 @@ interface ConnectorEvents {
 
 export class Connector {
   public socket: Socket;
-  public socketId: string = '';
+  public socketId: string = "";
   public roomUrl: string;
   public subscribe!: Subscribe;
   public username: string;
   private events: ConnectorEvents = {};
-  public role: 'host' | 'participant' = 'participant';
+  public role: "host" | "participant" = "participant";
 
   constructor(url: string, username: string, events?: ConnectorEvents) {
     const opts = {
-      path: '/socket',
-      transports: ['websocket'],
+      path: "/socket",
+      transports: ["websocket"]
     };
     this.username = username;
     this.socket = io(string_connection, opts);
@@ -43,94 +39,91 @@ export class Connector {
   }
 
   setSubscribe(subscribe: Subscribe) {
-      this.subscribe = subscribe;
+    this.subscribe = subscribe;
   }
 
   connectServer() {
     return new Promise((resolve: any, reject: any) => {
-
-      this.socket.on('connect', () => {
+      this.socket.on("connect", () => {
         this.socketId = this.socket.id as string;
-      })
-
-      this.socket.on('disconnect', (evt: any) => {
-        console.log('socket.io disconnect:', evt);
       });
 
+      this.socket.on("disconnect", (evt: any) => {
+        console.log("socket.io disconnect:", evt);
+      });
 
-      this.socket.on('member:left', async (data: {socketId: string, newHostId?: string}) => {
+      this.socket.on("member:left", async (data: { socketId: string; newHostId?: string }) => {
         await this.subscribe.handleParticipantLeaving(data.socketId);
         if (data.newHostId) {
           this.subscribe.setHostRole(data.newHostId);
           if (data.newHostId === this.socketId) {
-            this.role = 'host';
+            this.role = "host";
           }
           // Notify UI that host has changed
-          console.log('New host:', data.newHostId);
+          console.log("New host:", data.newHostId);
           this.events?.onHostChanged?.();
         }
         this.events?.onMemberLeft?.(data.socketId);
-        console.log('Member left:', this.subscribe.participants);
+        console.log("Member left:", this.subscribe.participants);
       });
 
-      
-      this.socket.on('connect-ack', async (message: { type: string, id: any }) => {
+      this.socket.on("connect-ack", async (message: { type: string; id: any }) => {
         try {
-          const response = await this.sendRequest('room:setup', {
+          const response = await this.sendRequest("room:setup", {
             roomId: this.roomUrl,
             username: this.username
           });
 
-          if (response.status === 'approved') {
+          if (response.status === "approved") {
             this.role = response.role;
-            console.log('prepare room : ', this.roomUrl);
-            console.log('role room : ', this.role);
-          } else if (response.status === 'pending') {
+            console.log("prepare room : ", this.roomUrl);
+            console.log("role room : ", this.role);
+          } else if (response.status === "pending") {
             this.events?.onWaitingApproval?.();
             // Wait for join result
-            this.socket.once('join:result', ({ approved }) => {
+            this.socket.once("join:result", ({ approved }) => {
               if (approved) {
-                console.log('Join request approved');
+                console.log("Join request approved");
                 this.events.onJoinRequestApproved?.();
                 resolve(null);
               } else {
-                console.log('Join request rejected');
+                console.log("Join request rejected");
                 this.events.onJoinRequestRejected?.();
                 this.socket.close();
-                reject('Join request rejected');
+                reject("Join request rejected");
               }
             });
             return;
           }
         } catch (error: any) {
-          if (error.type === 'exceed') {
+          if (error.type === "exceed") {
             this.socket.close();
-            reject('This room is full!');
+            reject("This room is full!");
           }
-          if (error.type === 'empty') {
+          if (error.type === "empty") {
             this.socket.close();
-            reject('This room is missing!');
+            reject("This room is missing!");
           }
           return;
         }
 
-        if (message.type === 'finish') {
+        if (message.type === "finish") {
           if (this.socket.id !== message.id) {
-            console.warn('WARN: socket-client != socket-server', this.socket.id, message.id);
+            console.warn("WARN: socket-client != socket-server", this.socket.id, message.id);
           }
 
-          console.log('connected to server. clientId=' + message.id);
+          console.log("connected to server. clientId=" + message.id);
           this.socketId = message.id;
           resolve(null);
         } else {
-          console.error('UNKNOWN message from server:', message);
+          console.error("UNKNOWN message from server:", message);
         }
       });
 
       // Host-specific event handlers
-      this.socket.on('join:request', (request: JoinRequest) => {
+      this.socket.on("join:request", (request: JoinRequest) => {
         console.log("Received join request from", request.username);
-        if (this.role === 'host') {
+        if (this.role === "host") {
           // Show UI prompt to host - you might want to replace this with a more sophisticated UI
           console.log("Host received join request from", request.username);
           this.events.onJoinRequest?.({
@@ -140,96 +133,85 @@ export class Connector {
         }
       });
 
-
-      this.socket.on('member:joined', async (member: {
-        username: string,
-        socketId: string, 
-        joinedAt: Date
-      }) => {
+      this.socket.on("member:joined", async (member: { username: string; socketId: string; joinedAt: Date }) => {
         console.log(`New member joined: ${member.username}`);
-  
+
         // Only handle if subscribe is initialized and member is not self
         if (this.subscribe && member.socketId !== this.socketId) {
-          console.log('Handling new member join:', member.username);
+          console.log("Handling new member join:", member.username);
           await this.subscribe.handleNewMember(member);
         }
-        
+
         this.events?.onMemberJoined?.(member);
       });
 
       // Existing event handlers...
-      this.socket.on('newProducer', async (data: any) => {
-        console.log('[client] newProducer:', data);
+      this.socket.on("newProducer", async (data: any) => {
+        console.log("[client] newProducer:", data);
         const { socketId, producerId, kind, username }: any = data;
-        console.log('--try consumeAdd remoteId=' + socketId + ', prdId=' + producerId + ', kind=' + kind);
+        console.log("--try consumeAdd remoteId=" + socketId + ", prdId=" + producerId + ", kind=" + kind);
         // await this.subscribe.consumeAdd(this.subscribe.consumerTransport, producerId, username, kind);
         await this.subscribe.consumeAdd(this.subscribe.consumerTransport, socketId, username, kind);
         console.log("New producer added");
         this.events?.onNewProducer?.();
       });
 
-      
-
-      this.socket.on('producerClosed', (data: any) => {
-        console.log('[client] producerClosed:', data);
+      this.socket.on("producerClosed", (data: any) => {
+        console.log("[client] producerClosed:", data);
         const { produceId, clientId, kind } = data;
-        console.log('--try removeConsumer remoteId=%s, localId=%s, track=%s', produceId, clientId, kind);
+        console.log("--try removeConsumer remoteId=%s, localId=%s, track=%s", produceId, clientId, kind);
         this.subscribe.removeConsumer(produceId, kind);
         this.subscribe.removeRemoteVideo(produceId);
       });
 
+      this.socket.on("producerAudioOff", (message: any) => {
+        const socketId = message.socketId;
 
-      this.socket.on('producerAudioOff', (message: any) => {
-          const socketId = message.socketId;
-          
-          this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.socketId == socketId){
-                  uv.audioOn = false;
-              }
-              return uv;
-          });
+        this.subscribe.participants = this.subscribe.participants.map((uv) => {
+          if (uv.socketId == socketId) {
+            uv.audioOn = false;
+          }
+          return uv;
+        });
       });
 
-      this.socket.on('producerAudioOn', (message: any) => {
-          const socketId = message.socketId;
-          
-          this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.socketId == socketId){
-                  uv.audioOn = true;
-              }
-              return uv;
-          });
+      this.socket.on("producerAudioOn", (message: any) => {
+        const socketId = message.socketId;
+
+        this.subscribe.participants = this.subscribe.participants.map((uv) => {
+          if (uv.socketId == socketId) {
+            uv.audioOn = true;
+          }
+          return uv;
+        });
       });
 
-      this.socket.on('producerVideoOff', (message: any) => {
-          const socketId = message.socketId;
-          
-          this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.socketId == socketId){
-                  uv.videoOn = false;
-              }
-              return uv;
-          });
+      this.socket.on("producerVideoOff", (message: any) => {
+        const socketId = message.socketId;
+
+        this.subscribe.participants = this.subscribe.participants.map((uv) => {
+          if (uv.socketId == socketId) {
+            uv.videoOn = false;
+          }
+          return uv;
+        });
       });
 
+      this.socket.on("producerVideoOn", (message: any) => {
+        const socketId = message.socketId;
 
-      this.socket.on('producerVideoOn', (message: any) => {
-          const socketId = message.socketId;
-          
-          this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.socketId == socketId){
-                  uv.videoOn = true;
-              }
-              return uv;
-          });
+        this.subscribe.participants = this.subscribe.participants.map((uv) => {
+          if (uv.socketId == socketId) {
+            uv.videoOn = true;
+          }
+          return uv;
+        });
       });
-
     });
   }
 
-  
   sendRequest(type: string, data: any): any {
-    console.log('[sendRequest]', type);
+    console.log("[sendRequest]", type);
     return new Promise((resolve, reject) => {
       this.socket.emit(type, data, (respond: any, err: any) => {
         if (err) {
@@ -239,6 +221,5 @@ export class Connector {
         }
       });
     });
-
   }
 }

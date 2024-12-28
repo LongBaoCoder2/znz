@@ -1,32 +1,32 @@
-import os from "os"
-import "dotenv/config.js"
-import { RtpCodecCapability, WorkerLogTag } from "mediasoup/node/lib/types"
+import os from "os";
+import "dotenv/config.js";
+import { RtpCodecCapability, WorkerLogTag } from "mediasoup/node/lib/types";
 
-const ifaces = os.networkInterfaces()
+const ifaces = os.networkInterfaces();
 
 const getLocalIp = () => {
-  let localIp = '127.0.0.1'
+  let localIp = "127.0.0.1";
   Object.keys(ifaces).forEach((ifname) => {
     if (!ifaces[ifname]) return;
 
     for (const iface of ifaces[ifname]) {
       // Ignore IPv6 and 127.0.0.1
-      if (iface.family !== 'IPv4' || iface.internal !== false) {
-        continue
+      if (iface.family !== "IPv4" || iface.internal !== false) {
+        continue;
       }
 
-      localIp = iface.address
+      localIp = iface.address;
       return;
     }
-  })
-  return localIp
-}
+  });
+  return localIp;
+};
 
 export const config = {
-  listenIp: '0.0.0.0',
+  listenIp: "0.0.0.0",
   listenPort: process.env.PORT || 8000,
-  sslCrt: '../ssl/localhost.crt',
-  sslKey: '../ssl/localhost.key',
+  sslCrt: "../ssl/localhost.crt",
+  sslKey: "../ssl/localhost.key",
   databaseString: process.env.DATABASE_URL,
   numWorkers: Object.keys(os.cpus()).length,
 
@@ -36,31 +36,24 @@ export const config = {
     worker: {
       rtcMinPort: 10000,
       rtcMaxPort: 10100,
-      logLevel: 'warn',
-      logTags: [
-        'info',
-        'ice',
-        'dtls',
-        'rtp',
-        'srtp',
-        'rtcp'
-      ] as WorkerLogTag[]
+      logLevel: "warn",
+      logTags: ["info", "ice", "dtls", "rtp", "srtp", "rtcp"] as WorkerLogTag[]
     },
     // Router settings
     router: {
       mediaCodecs: [
-      {
-          kind: 'audio',
-          mimeType: 'audio/opus',
+        {
+          kind: "audio",
+          mimeType: "audio/opus",
           clockRate: 48000,
           channels: 2
         },
         {
-          kind: 'video',
-          mimeType: 'video/VP8',
+          kind: "video",
+          mimeType: "video/VP8",
           clockRate: 90000,
           parameters: {
-            'x-google-start-bitrate': 1000
+            "x-google-start-bitrate": 1000
           }
         }
       ] as RtpCodecCapability[]
@@ -69,7 +62,7 @@ export const config = {
     webRtcTransport: {
       listenIps: [
         {
-          ip: '0.0.0.0',
+          ip: "0.0.0.0",
           announcedIp: getLocalIp() // replace by public IP address
         }
       ],
@@ -77,7 +70,7 @@ export const config = {
       enableTcp: true,
       preferUdp: true,
       initialAvailableOutgoingBitrate: 1000000,
-      maxIncomingBitrate: 1500000,
+      maxIncomingBitrate: 1500000
     }
   }
 } as const;

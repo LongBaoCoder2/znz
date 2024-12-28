@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { childLogger } from "@sfu/core/logger";
-import path from 'path';
-import { readFileSync } from 'fs';
+import path from "path";
+import { readFileSync } from "fs";
 import ProfileService from "@sfu/services/profile.service";
 import { ProfileDto } from "@sfu/dtos/profile.dto";
 import { RequestWithUser } from "@sfu/interfaces/auth.interface";
@@ -20,7 +20,7 @@ const profileController = {
       sfuLogger.info("newProfile------------: ", newProfile);
       res.status(201).json({
         message: "Profile created successfully.",
-        data: newProfile,
+        data: newProfile
       });
     } catch (error: any) {
       sfuLogger.error("Error creating profile: ", error);
@@ -29,7 +29,7 @@ const profileController = {
       const errorMessage = "Error creating profile.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -44,22 +44,18 @@ const profileController = {
 
       sfuLogger.info("Profile------------: ", profile);
 
-
       res.status(200).json({
         message: "Profile retrieved successfully.",
-        data: profile,
+        data: profile
       });
-
     } catch (error: any) {
       sfuLogger.error("Error retrieving profile: ", error);
 
       const statusCode = error.message === "Invalid userId." ? 400 : 500;
-      const errorMessage = statusCode === 400
-        ? "Invalid userId."
-        : "Error getting profile.";
+      const errorMessage = statusCode === 400 ? "Invalid userId." : "Error getting profile.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -70,7 +66,7 @@ const profileController = {
 
       if (!req.files) {
         res.status(400).json({
-          message: "Must have file!",
+          message: "Must have file!"
         });
         return;
       }
@@ -80,7 +76,7 @@ const profileController = {
       const profile = profileService.getProfileByUserId(userId);
       if (!profile) {
         res.status(409).json({
-          message: "Invalid userId!",
+          message: "Invalid userId!"
         });
         return;
       }
@@ -88,14 +84,13 @@ const profileController = {
       if (req.file) {
         const avatarUrl = path.join("/uploads/", req.file.filename);
 
-
         await profileService.updateAvatarUrlByUserId(userId, avatarUrl);
 
-        const fileContent = readFileSync(avatarUrl, 'base64');
+        const fileContent = readFileSync(avatarUrl, "base64");
 
         res.status(200).json({
           message: "Avatar updated successfully.",
-          data: fileContent,
+          data: fileContent
         });
       }
     } catch (error: any) {
@@ -105,7 +100,7 @@ const profileController = {
       const errorMessage = "Error updating avatar.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -118,7 +113,7 @@ const profileController = {
       const profile = await profileService.getProfileByUserId(userId);
       if (!profile) {
         res.status(409).json({
-          message: "Invalid userId!",
+          message: "Invalid userId!"
         });
         return;
       }
@@ -129,15 +124,14 @@ const profileController = {
         displayName: req.body.displayName,
         fullname: req.body.fullName,
         email: req.body.email,
-        phoneNumber: req.body.phoneNumber,
+        phoneNumber: req.body.phoneNumber
       };
 
       await updateProfile(profileId, newData);
 
       res.status(200).json({
-        message: "Profile updated successfully.",
+        message: "Profile updated successfully."
       });
-
     } catch (error: any) {
       sfuLogger.error("Error updating profile: ", error);
 
@@ -145,10 +139,10 @@ const profileController = {
       const errorMessage = "Error updating profile.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
-  },
+  }
 };
 
 export default profileController;

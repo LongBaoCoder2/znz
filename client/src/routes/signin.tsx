@@ -8,8 +8,7 @@ import { SignInResponse, SignUpResponse } from "../axios/interface";
 import Cookies from "js-cookie";
 
 function SignIn() {
-  let navigate = useNavigate();
-
+  const navigate = useNavigate();
 
   // useEffect(() => {
   //   if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
@@ -29,7 +28,8 @@ function SignIn() {
   const [signUpUsernameFailedMessage, setSignUpUsernameFailedMessage] = useState("");
 
   const [isSignUpPasswordValid, setIsSignUpPasswordValid] = useState(true);
-  const signUpPasswordFailedMessage = "*Mật khẩu phải chứa ít nhất 8 ký tự, gồm ít nhất một ký tự hoa, một ký tự thường và một số.";
+  const signUpPasswordFailedMessage =
+    "*Mật khẩu phải chứa ít nhất 8 ký tự, gồm ít nhất một ký tự hoa, một ký tự thường và một số.";
 
   const [isSignUpConfirmedPasswordValid, setIsSignUpConfirmedPasswordValid] = useState(true);
   const signUpConfirmedPasswordFailedMessage = "*Mật khẩu không khớp!";
@@ -42,17 +42,16 @@ function SignIn() {
     try {
       const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
         username: signInUsername,
-        password: signInPassword,
+        password: signInPassword
       });
-      console.log(Cookies.get('accessToken'));
-      Cookies.remove('accessToken');
-      Cookies.remove('refreshToken');
-      Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
-      Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
-      console.log(Cookies.get('accessToken'));
+      console.log(Cookies.get("accessToken"));
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
+      Cookies.set("accessToken", response.data.accessToken, { expires: 1 });
+      Cookies.set("refreshToken", response.data.refreshToken, { expires: 1 });
+      console.log(Cookies.get("accessToken"));
       navigate("/home");
-    }
-    catch (error) {
+    } catch (error) {
       setIsSignInValid(false);
     }
     return;
@@ -71,7 +70,12 @@ function SignIn() {
       return;
     }
     setIsSignUpUsernameValid(true);
-    if (signUpPassword.length < 8 || !signUpPassword.match(/[a-z]/) || !signUpPassword.match(/[A-Z]/) || !signUpPassword.match(/[0-9]/)) {
+    if (
+      signUpPassword.length < 8 ||
+      !signUpPassword.match(/[a-z]/) ||
+      !signUpPassword.match(/[A-Z]/) ||
+      !signUpPassword.match(/[0-9]/)
+    ) {
       setIsSignUpPasswordValid(false);
       return;
     }
@@ -85,22 +89,21 @@ function SignIn() {
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
         username: signUpUsername,
-        password: signUpPassword,
+        password: signUpPassword
       });
       console.log(response);
       if (response.status === 201) {
         const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
           username: signUpUsername,
-          password: signUpPassword,
+          password: signUpPassword
         });
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
-        Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
-        Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+        Cookies.set("accessToken", response.data.accessToken, { expires: 1 });
+        Cookies.set("refreshToken", response.data.refreshToken, { expires: 1 });
         navigate("/signup");
       }
-    }
-    catch (error) {
+    } catch (error) {
       setSignUpUsernameFailedMessage("*Tên đăng nhập đã tồn tại, vui lòng chọn tên đăng nhập khác!");
       setIsSignUpUsernameValid(false);
       console.error(error);
@@ -108,196 +111,142 @@ function SignIn() {
   };
 
   return (
-    <Container fluid className="vw-100">
+    <Container fluid className='vw-100'>
       <Row>
         {isSignIn ? (
-          <Col className="d-flex flex-column justify-content-start align-items-center">
-            <h1 className="align-self-start mt-5 ms-5 text-primary">
-              ZNZ
-            </h1>
-            <h2 className="text-primary my-5">
-              Đăng nhập
-            </h2>
-            <span className="mb-4">
+          <Col className='d-flex flex-column justify-content-start align-items-center'>
+            <h1 className='align-self-start mt-5 ms-5 text-primary'>ZNZ</h1>
+            <h2 className='text-primary my-5'>Đăng nhập</h2>
+            <span className='mb-4'>
               <span>Chào mừng bạn quay trở lại với </span>
               <b>ZNZ</b>
               <span> !</span>
             </span>
-            <Form className="col-6 text-start">
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Tên đăng nhập</Form.Label>
+            <Form className='col-6 text-start'>
+              <Form.Group className='mb-3'>
+                <Form.Label className='fw-medium'>Tên đăng nhập</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Tên đăng nhập"
+                  type='text'
+                  placeholder='Tên đăng nhập'
                   value={signInUsername}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIsSignInValid(true);
                     setSignInUsername(e.target.value);
                   }}
                 />
-                {!isSignInValid && (
-                  <Form.Text className="text-danger">
-                    {signInFailedMessage}
-                  </Form.Text>
-                )}
+                {!isSignInValid && <Form.Text className='text-danger'>{signInFailedMessage}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Mật khẩu</Form.Label>
+              <Form.Group className='mb-3'>
+                <Form.Label className='fw-medium'>Mật khẩu</Form.Label>
                 <Form.Control
-                  type="password"
-                  placeholder="Mật khẩu"
+                  type='password'
+                  placeholder='Mật khẩu'
                   value={signInPassword}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIsSignInValid(true);
                     setSignInPassword(e.target.value);
                   }}
                 />
-                {!isSignInValid && (
-                  <Form.Text className="text-danger">
-                    {signInFailedMessage}
-                  </Form.Text>
-                )}
+                {!isSignInValid && <Form.Text className='text-danger'>{signInFailedMessage}</Form.Text>}
               </Form.Group>
             </Form>
-            <Button
-              className="my-4"
-              onClick={handleSignIn}
-            >
+            <Button className='my-4' onClick={handleSignIn}>
               Đăng nhập
             </Button>
             <span>
               <span>Mới biết đến </span>
               <b>ZNZ</b>
               <span>? </span>
-              <b
-                className="text-primary"
-                style={{ cursor: "pointer" }}
-                onClick={() => setIsSignIn(false)}
-              >
+              <b className='text-primary' style={{ cursor: "pointer" }} onClick={() => setIsSignIn(false)}>
                 Đăng ký miễn phí
               </b>
             </span>
           </Col>
         ) : (
-          <Col className="vh-100 d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: "#E5E5E5" }}>
-            <h5 className="align-self-start mt-5 ms-5">
-              About Us
-            </h5>
-            <Image
-              className="mx-5"
-              src={AboutUsImage}
-              fluid
-            />
-            <Button
-              className="mt-5 text-primary"
-              variant="light"
-              onClick={() => setIsSignIn(true)}
-            >
+          <Col
+            className='vh-100 d-flex flex-column justify-content-center align-items-center'
+            style={{ backgroundColor: "#E5E5E5" }}
+          >
+            <h5 className='align-self-start mt-5 ms-5'>About Us</h5>
+            <Image className='mx-5' src={AboutUsImage} fluid />
+            <Button className='mt-5 text-primary' variant='light' onClick={() => setIsSignIn(true)}>
               Đăng nhập
             </Button>
           </Col>
         )}
 
         {isSignIn ? (
-          <Col className="vh-100 d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: "#E5E5E5" }}>
-            <h5 className="align-self-start mt-5 ms-5">
-              About Us
-            </h5>
-            <Image
-              className="mx-5"
-              src={AboutUsImage}
-              fluid
-            />
-            <Button
-              className="mt-5 text-primary"
-              variant="light"
-              onClick={() => setIsSignIn(false)}
-            >
+          <Col
+            className='vh-100 d-flex flex-column justify-content-center align-items-center'
+            style={{ backgroundColor: "#E5E5E5" }}
+          >
+            <h5 className='align-self-start mt-5 ms-5'>About Us</h5>
+            <Image className='mx-5' src={AboutUsImage} fluid />
+            <Button className='mt-5 text-primary' variant='light' onClick={() => setIsSignIn(false)}>
               Đăng ký
             </Button>
           </Col>
         ) : (
-          <Col className="d-flex flex-column justify-content-start align-items-center">
-            <h1 className="align-self-start mt-5 ms-5 text-primary">
-              ZNZ
-            </h1>
-            <h2 className="text-primary my-5">
-              Đăng ký
-            </h2>
-            <Form className="col-6 text-start">
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Tên đăng nhập</Form.Label>
+          <Col className='d-flex flex-column justify-content-start align-items-center'>
+            <h1 className='align-self-start mt-5 ms-5 text-primary'>ZNZ</h1>
+            <h2 className='text-primary my-5'>Đăng ký</h2>
+            <Form className='col-6 text-start'>
+              <Form.Group className='mb-3'>
+                <Form.Label className='fw-medium'>Tên đăng nhập</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Tên đăng nhập"
+                  type='text'
+                  placeholder='Tên đăng nhập'
                   value={signUpUsername}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIsSignUpUsernameValid(true);
                     setSignUpUsername(e.target.value);
                   }}
                 />
-                {!isSignUpUsernameValid && (
-                  <Form.Text className="text-danger">
-                    {signUpUsernameFailedMessage}
-                  </Form.Text>
-                )}
+                {!isSignUpUsernameValid && <Form.Text className='text-danger'>{signUpUsernameFailedMessage}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Mật khẩu</Form.Label>
+              <Form.Group className='mb-3'>
+                <Form.Label className='fw-medium'>Mật khẩu</Form.Label>
                 <Form.Control
-                  type="password"
-                  placeholder="Mật khẩu"
+                  type='password'
+                  placeholder='Mật khẩu'
                   value={signUpPassword}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIsSignUpPasswordValid(true);
                     setSignUpPassword(e.target.value);
                   }}
                 />
-                {!isSignUpPasswordValid && (
-                  <Form.Text className="text-danger">
-                    {signUpPasswordFailedMessage}
-                  </Form.Text>
-                )}
+                {!isSignUpPasswordValid && <Form.Text className='text-danger'>{signUpPasswordFailedMessage}</Form.Text>}
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Nhập lại mật khẩu</Form.Label>
+              <Form.Group className='mb-3'>
+                <Form.Label className='fw-medium'>Nhập lại mật khẩu</Form.Label>
                 <Form.Control
-                  type="password"
-                  placeholder="Nhập lại mật khẩu"
+                  type='password'
+                  placeholder='Nhập lại mật khẩu'
                   value={signupConfirmedPassword}
-                  onChange={e => {
+                  onChange={(e) => {
                     setIsSignUpConfirmedPasswordValid(true);
                     setSignUpConfirmedPassword(e.target.value);
                   }}
                 />
                 {!isSignUpConfirmedPasswordValid && (
-                  <Form.Text className="text-danger">
-                    {signUpConfirmedPasswordFailedMessage}
-                  </Form.Text>
+                  <Form.Text className='text-danger'>{signUpConfirmedPasswordFailedMessage}</Form.Text>
                 )}
               </Form.Group>
             </Form>
-            <Button
-              className="my-4"
-              onClick={handleSignUp}
-            >
+            <Button className='my-4' onClick={handleSignUp}>
               Đăng ký
             </Button>
             <span>
               <span>Bạn đã có tài khoản? </span>
-              <b
-                className="text-primary"
-                style={{ cursor: "pointer" }}
-                onClick={() => setIsSignIn(true)}
-              >
+              <b className='text-primary' style={{ cursor: "pointer" }} onClick={() => setIsSignIn(true)}>
                 Đăng nhập
               </b>
             </span>
           </Col>
         )}
       </Row>
-    </Container >
+    </Container>
   );
-};
+}
 
 export default SignIn;

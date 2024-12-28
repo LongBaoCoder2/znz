@@ -17,12 +17,12 @@ class MeetingService {
       const newMeeting = await createMeeting(createTitle, displayId, uri, hostId, hostName, password);
       const passwordRoom = "";
       const { roomId, room } = await setupRoom(createTitle, newMeeting.uri, newMeeting.host, passwordRoom);
-      
+
       return { roomId, newMeeting };
     } catch (error: any) {
       throw new Error(error.message);
     }
   }
-};
+}
 
 export default MeetingService;

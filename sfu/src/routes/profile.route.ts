@@ -9,9 +9,8 @@ const profileRoute = Router();
 
 profileRoute.post(path, authMiddleware, profileController.createProfileHandler);
 profileRoute.get(path, authMiddleware, profileController.getProfileByUserIdHandler);
-profileRoute.patch(path + "avatar", authMiddleware, upload.single('avatar'), profileController.updateAvatarHandler);
+profileRoute.patch(path + "avatar", authMiddleware, upload.single("avatar"), profileController.updateAvatarHandler);
 profileRoute.patch(path, authMiddleware, profileController.updateProfileHandler);
 profileRoute.patch(path, authMiddleware, profileController.updateProfileHandler);
-
 
 export default profileRoute;

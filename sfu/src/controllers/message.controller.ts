@@ -8,26 +8,23 @@ const sfuLogger = childLogger("sfu");
 const messageController = {
   sendMesageHandler: async (req: Request, res: Response) => {
     try {
-      const messageDto : SendMessageDto = req.body;
-      
+      const messageDto: SendMessageDto = req.body;
+
       const messageService = new MessageService();
       const createdMessage = await messageService.sendMessage(messageDto);
 
       res.status(201).json({
         message: "Message sent successfully.",
-        data: createdMessage,
+        data: createdMessage
       });
-    }
-    catch (error: any) {
+    } catch (error: any) {
       sfuLogger.error("Error sending message: ", error);
 
       const statusCode = error.message === "Message content cannot be empty." ? 400 : 500;
-      const errorMessage = statusCode === 400
-        ? "Message content cannot be empty."
-        : "Error sending message.";
-  
+      const errorMessage = statusCode === 400 ? "Message content cannot be empty." : "Error sending message.";
+
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -41,18 +38,16 @@ const messageController = {
 
       res.status(200).json({
         message: "Messages retrieved successfully.",
-        data: meetingMessages,
+        data: meetingMessages
       });
     } catch (error: any) {
       sfuLogger.error("Error retrieving meeting messages: ", error);
 
       const statusCode = error.message === "Invalid meetingId." ? 400 : 500;
-      const errorMessage = statusCode === 400
-        ? "Invalid meetingId."
-        : "Error sending message.";
+      const errorMessage = statusCode === 400 ? "Invalid meetingId." : "Error sending message.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -69,12 +64,10 @@ const messageController = {
       sfuLogger.error("Error pinning message: ", error);
 
       const statusCode = error.message === "Invalid messageId." ? 400 : 500;
-      const errorMessage = statusCode === 400
-        ? "Invalid messageId."
-        : "Error pinning message.";
+      const errorMessage = statusCode === 400 ? "Invalid messageId." : "Error pinning message.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   },
@@ -91,12 +84,10 @@ const messageController = {
       sfuLogger.error("Error unpinning message: ", error);
 
       const statusCode = error.message === "Invalid messageId." ? 400 : 500;
-      const errorMessage = statusCode === 400
-        ? "Invalid messageId."
-        : "Error unpinning message.";
+      const errorMessage = statusCode === 400 ? "Invalid messageId." : "Error unpinning message.";
 
       res.status(statusCode).json({
-        message: errorMessage,
+        message: errorMessage
       });
     }
   }

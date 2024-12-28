@@ -31,24 +31,24 @@ function SignUp() {
       return;
     }
     try {
-
       const accessToken = Cookies.get("accessToken");
       console.log(accessToken);
-      const response = await axios.post<CreateProfileResponse>(getURL("/profile"), {
-        displayName: displayName,
-        fullName: fullName,
-        email: email,
-        phoneNumber: phoneNumber,
-      },
+      const response = await axios.post<CreateProfileResponse>(
+        getURL("/profile"),
+        {
+          displayName: displayName,
+          fullName: fullName,
+          email: email,
+          phoneNumber: phoneNumber
+        },
         {
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`
           }
         }
       );
       console.log(response);
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
 
@@ -56,105 +56,77 @@ function SignUp() {
   };
 
   return (
-    <Container fluid className="vw-100">
+    <Container fluid className='vw-100'>
       <Row>
-        <Col className="vh-100 d-flex flex-column justify-content-center align-items-center" style={{ backgroundColor: "#E5E5E5" }}>
-          <h5 className="align-self-start mt-5 ms-5">
-            About Us
-          </h5>
-          <Image
-            className="mx-5"
-            src={AboutUsImage}
-            fluid
-          />
-          <Button
-            className="mt-5 text-primary"
-            variant="light"
-            href="/signin"
-          >
+        <Col
+          className='vh-100 d-flex flex-column justify-content-center align-items-center'
+          style={{ backgroundColor: "#E5E5E5" }}
+        >
+          <h5 className='align-self-start mt-5 ms-5'>About Us</h5>
+          <Image className='mx-5' src={AboutUsImage} fluid />
+          <Button className='mt-5 text-primary' variant='light' href='/signin'>
             Đăng nhập
           </Button>
         </Col>
 
-        <Col className="d-flex flex-column justify-content-start align-items-center">
-          <h1 className="align-self-start mt-5 ms-5 text-primary">
-            ZNZ
-          </h1>
-          <h2 className="text-primary my-4">
-            Đăng ký
-          </h2>
-          <span className="mb-4">
-            Vui lòng cập nhật thông tin cá nhân của bạn.
-          </span>
-          <Form className="col-6 text-start">
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Họ và tên</Form.Label>
+        <Col className='d-flex flex-column justify-content-start align-items-center'>
+          <h1 className='align-self-start mt-5 ms-5 text-primary'>ZNZ</h1>
+          <h2 className='text-primary my-4'>Đăng ký</h2>
+          <span className='mb-4'>Vui lòng cập nhật thông tin cá nhân của bạn.</span>
+          <Form className='col-6 text-start'>
+            <Form.Group className='mb-3'>
+              <Form.Label className='fw-medium'>Họ và tên</Form.Label>
               <Form.Control
-                type="text"
-                placeholder="Họ và tên"
+                type='text'
+                placeholder='Họ và tên'
                 value={fullName}
-                onChange={e => {
+                onChange={(e) => {
                   setIsFullNameValid(true);
                   setFullName(e.target.value);
                   setDisplayName(e.target.value);
                 }}
               />
-              {!isFullNameValid && (
-                <Form.Text className="text-danger">
-                  *Họ và tên không được để trống
-                </Form.Text>
-              )}
+              {!isFullNameValid && <Form.Text className='text-danger'>*Họ và tên không được để trống</Form.Text>}
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Tên hiển thị</Form.Label>
+            <Form.Group className='mb-3'>
+              <Form.Label className='fw-medium'>Tên hiển thị</Form.Label>
               <Form.Control
-                type="text"
-                placeholder="Họ và tên"
+                type='text'
+                placeholder='Họ và tên'
                 value={displayName}
-                onChange={e => {
+                onChange={(e) => {
                   setIsDisplayNameValid(true);
                   setDisplayName(e.target.value);
                 }}
               />
-              {!isDisplayNameValid && (
-                <Form.Text className="text-danger">
-                  *Tên hiển thị không được để trống
-                </Form.Text>
-              )}
+              {!isDisplayNameValid && <Form.Text className='text-danger'>*Tên hiển thị không được để trống</Form.Text>}
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Email</Form.Label>
+            <Form.Group className='mb-3'>
+              <Form.Label className='fw-medium'>Email</Form.Label>
               <Form.Control
-                type="email"
-                placeholder="Email"
+                type='email'
+                placeholder='Email'
                 value={email}
-                onChange={e => {
+                onChange={(e) => {
                   setIsEmailValid(true);
                   setEmail(e.target.value);
                 }}
               />
-              {!isEmailValid && (
-                <Form.Text className="text-danger">
-                  *Email không hợp lệ
-                </Form.Text>
-              )}
+              {!isEmailValid && <Form.Text className='text-danger'>*Email không hợp lệ</Form.Text>}
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Số điện thoại (tùy chọn)</Form.Label>
+            <Form.Group className='mb-3'>
+              <Form.Label className='fw-medium'>Số điện thoại (tùy chọn)</Form.Label>
               <Form.Control
-                type="tel"
-                placeholder="Số điện thoại"
+                type='tel'
+                placeholder='Số điện thoại'
                 value={phoneNumber}
-                onChange={e => {
+                onChange={(e) => {
                   setPhoneNumber(e.target.value);
                 }}
               />
             </Form.Group>
           </Form>
-          <Button
-            className="my-4"
-            onClick={handleSignUp}
-          >
+          <Button className='my-4' onClick={handleSignUp}>
             Hoàn tất
           </Button>
         </Col>
@@ -163,26 +135,22 @@ function SignUp() {
       <Modal
         show={modalShow}
         onHide={() => setModalShow(false)}
-        size="lg"
-        aria-labelledby="contained-modal-title-vcenter"
+        size='lg'
+        aria-labelledby='contained-modal-title-vcenter'
         centered
       >
         <Modal.Header>
-          <Modal.Title>
-            Chỉ một bước nữa thôi!
-          </Modal.Title>
+          <Modal.Title>Chỉ một bước nữa thôi!</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để hoàn tất thủ tục đăng ký!
-          </p>
+          <p>Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để hoàn tất thủ tục đăng ký!</p>
         </Modal.Body>
         <Modal.Footer>
-          <Button href="/signin">Đăng nhập</Button>
+          <Button href='/signin'>Đăng nhập</Button>
         </Modal.Footer>
       </Modal>
     </Container>
   );
-};
+}
 
 export default SignUp;

@@ -12,7 +12,7 @@ class MessageService {
       }
 
       const newMessage = await createMessage(meetingId, userId, content, toUser, isPinned);
-      
+
       return newMessage;
     } catch (error: any) {
       throw new Error(error.message);
@@ -24,7 +24,7 @@ class MessageService {
       if (isNaN(meetingId)) {
         throw new Error("Invalid meetingId.");
       }
-  
+
       const messages = await getMeetingMessages(meetingId);
 
       return messages;
@@ -41,8 +41,7 @@ class MessageService {
 
       if (pinStatus === true) {
         await pinMessage(messageId);
-      }
-      else {
+      } else {
         await unpinMessage(messageId);
       }
       return;
@@ -50,6 +49,6 @@ class MessageService {
       throw new Error(error.message);
     }
   }
-};
+}
 
 export default MessageService;
