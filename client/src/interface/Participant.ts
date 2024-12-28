@@ -1,7 +1,7 @@
 export interface Participant {
   username: string;
-  videoProducerId?: string; 
-  audioProducerId?: string; 
+  // videoProducerId?: string; 
+  // audioProducerId?: string; 
   socketId: string;
   videoOn: boolean;
   audioOn: boolean;

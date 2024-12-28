@@ -270,6 +270,39 @@ export const addMember = (roomId: string, member: MemberSFU) => {
   sfuLogger.info("addMember Service: ", room.members);
 }
 
+export const transferHostRole = (roomId: string, currentHostId: string, newHostId: string) => {
+  const room = Room.getRoomById(roomId);
+  if(!room) {
+    sfuLogger.info(`transferHostRole() - there is no room: ${roomId}`);
+    return;
+  }
+  room.transferHostRole(currentHostId, newHostId);
+}
+
+export const transferHostDefault = (roomId: string, hostId: string) => {
+  const room = Room.getRoomById(roomId);
+  if (!room) {
+    sfuLogger.info(`transferHostDefault() - there is no room: ${roomId}`);
+    return;
+  }
+
+  if (room.members.size <= 1) {
+    return;
+  }
+
+  const earliestMember = Array.from(room.members.values())
+    .filter(member => member.socketId !== hostId)
+    .sort((a, b) => b.joinedAt.getSeconds() - a.joinedAt.getSeconds())[0];
+
+  let newHostId = undefined;
+  if (earliestMember) {
+    room.transferHostRole(hostId, earliestMember.socketId);
+    newHostId = earliestMember.socketId;
+  }
+
+  return newHostId;
+}
+
 
 export const removeMember = (roomId: string, id: string) => {
   const room = Room.getRoomById(roomId);
@@ -311,6 +344,15 @@ export const clearPeer = (roomId: string, socket: any) => {
     removeMember(roomId, clientId);
 
     checkEmpty(roomId);
+}
+
+export const isHost = (roomId: string, clientId: string) => {
+  const room = Room.getRoomById(roomId);
+  if(!room) {
+    sfuLogger.info(`isHost() - there is no room: ${roomId}`);
+    return;
+  }
+  return room.isHost(clientId);
 }
 
 
