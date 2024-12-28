@@ -29,8 +29,12 @@ export const setupSocketServer = async (httpServer: any) => {
       socket.on('disconnect', () => {
           const roomId = socket.roomId;
 
+          let newHostId = undefined;
+          if (mediasoupService.isHost(roomId, socket.id)) {
+            newHostId = mediasoupService.transferHostDefault(roomId, socket.id);
+          }
           mediasoupService.clearPeer(roomId, socket);
-          socket.to(roomId).emit('member:left', { socketId: socket.id });
+          socket.to(roomId).emit('member:left', { socketId: socket.id, newHostId });
           sfuLogger.info(`Client disconnected: ${socket.id}`);
           socket.leave(roomId);
       })
@@ -58,7 +62,7 @@ export const setupSocketServer = async (httpServer: any) => {
         const addedMember = room.addMember(member);
         sfuLogger.info(`room:setup newMember: ${JSON.stringify(addedMember)}`);
         if (addedMember.role === 'participant') {
-          sfuLogger.info(`room:setup request to host: ${room.hostSocketId}`);
+          sfuLogger.info(`room:setup request to host: ${room.hostSocketId as string}`);
           socket.to(room.hostSocketId!).emit('join:request', {
             username: data.username,
             socketId: socket.id
@@ -381,7 +385,7 @@ export const setupSocketServer = async (httpServer: any) => {
               producer.pause();
           }
           socket.broadcast.to(roomId).emit('producerVideoOff', { 
-              producerId: socket.id
+              socketId: socket.id
           });
       });
 
@@ -393,7 +397,7 @@ export const setupSocketServer = async (httpServer: any) => {
               producer.resume();
           }
           socket.broadcast.to(roomId).emit('producerVideoOn', { 
-              producerId: socket.id
+              socketId: socket.id
           });
       });
 
@@ -405,7 +409,7 @@ export const setupSocketServer = async (httpServer: any) => {
               producer.pause();
           }
           socket.broadcast.to(roomId).emit('producerAudioOff', { 
-              producerId: socket.id
+              socketId: socket.id
           });
       });
 
@@ -417,7 +421,7 @@ export const setupSocketServer = async (httpServer: any) => {
               producer.resume();
           }
           socket.broadcast.to(roomId).emit('producerAudioOn', { 
-              producerId: socket.id
+              socketId: socket.id
           });
       });
 

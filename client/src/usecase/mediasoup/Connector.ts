@@ -18,6 +18,8 @@ interface ConnectorEvents {
     joinedAt: Date
   }) => void;
   onMemberLeft?: (socketId: string) => void;
+  onHostChanged?: () => void;
+  onNewProducer?: () => void;
 }
 
 export class Connector {
@@ -28,16 +30,6 @@ export class Connector {
   public username: string;
   private events: ConnectorEvents = {};
   public role: 'host' | 'participant' = 'participant';
-
-  // constructor(url: string, username:any) {
-  //     const opts = {
-  //         path: '/socket',
-  //         transports: ['websocket'],
-  //     };
-  //     this.username = username;
-  //     this.socket = io(string_connection, opts);
-  //     this.roomUrl = url;
-  // }
 
   constructor(url: string, username: string, events?: ConnectorEvents) {
     const opts = {
@@ -66,8 +58,17 @@ export class Connector {
       });
 
 
-      this.socket.on('member:left', async (data: {socketId: string}) => {
+      this.socket.on('member:left', async (data: {socketId: string, newHostId?: string}) => {
         await this.subscribe.handleParticipantLeaving(data.socketId);
+        if (data.newHostId) {
+          this.subscribe.setHostRole(data.newHostId);
+          if (data.newHostId === this.socketId) {
+            this.role = 'host';
+          }
+          // Notify UI that host has changed
+          console.log('New host:', data.newHostId);
+          this.events?.onHostChanged?.();
+        }
         this.events?.onMemberLeft?.(data.socketId);
         console.log('Member left:', this.subscribe.participants);
       });
@@ -161,7 +162,10 @@ export class Connector {
         console.log('[client] newProducer:', data);
         const { socketId, producerId, kind, username }: any = data;
         console.log('--try consumeAdd remoteId=' + socketId + ', prdId=' + producerId + ', kind=' + kind);
-        this.subscribe.consumeAdd(this.subscribe.consumerTransport, producerId, username, socketId, kind);
+        // await this.subscribe.consumeAdd(this.subscribe.consumerTransport, producerId, username, kind);
+        await this.subscribe.consumeAdd(this.subscribe.consumerTransport, socketId, username, kind);
+        console.log("New producer added");
+        this.events?.onNewProducer?.();
       });
 
       
@@ -176,10 +180,10 @@ export class Connector {
 
 
       this.socket.on('producerAudioOff', (message: any) => {
-          const producerId = message.producerId;
+          const socketId = message.socketId;
           
           this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.audioProducerId == producerId){
+              if(uv.socketId == socketId){
                   uv.audioOn = false;
               }
               return uv;
@@ -187,10 +191,10 @@ export class Connector {
       });
 
       this.socket.on('producerAudioOn', (message: any) => {
-          const producerId = message.producerId;
+          const socketId = message.socketId;
           
           this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.audioProducerId == producerId){
+              if(uv.socketId == socketId){
                   uv.audioOn = true;
               }
               return uv;
@@ -198,10 +202,10 @@ export class Connector {
       });
 
       this.socket.on('producerVideoOff', (message: any) => {
-          const producerId = message.producerId;
+          const socketId = message.socketId;
           
           this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.videoProducerId == producerId){
+              if(uv.socketId == socketId){
                   uv.videoOn = false;
               }
               return uv;
@@ -210,10 +214,10 @@ export class Connector {
 
 
       this.socket.on('producerVideoOn', (message: any) => {
-          const producerId = message.producerId;
+          const socketId = message.socketId;
           
           this.subscribe.participants = this.subscribe.participants.map((uv) => {
-              if(uv.videoProducerId == producerId){
+              if(uv.socketId == socketId){
                   uv.videoOn = true;
               }
               return uv;

@@ -6,3 +6,6 @@ node_modules/
 /sfu/tsconfig.tsbuildinfo
 /sfu/src/db/migrations/
 yarn.lock
+*/yarn.lock
+package-lock.json
+*/package-lock.json

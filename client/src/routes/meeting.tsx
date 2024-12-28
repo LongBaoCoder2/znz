@@ -27,11 +27,6 @@ let subscribe: Subscribe;
 let device: MediasoupDevice;
 
 
-// import { useEffect, useRef } from "react";
-// import { PersonFill, MicFill, MicMuteFill } from "react-bootstrap-icons";
-// import { Card } from "react-bootstrap";
-// import { useEffect } from "react";
-
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   username: string;
@@ -115,6 +110,10 @@ function Meeting() {
     }
   };
 
+  useEffect(() => {
+    console.log("participants updated: ", participants);
+  }, [participants]);
+
   // Handler functions
   const handleMicToggle = () => {
     if (micOn) {
@@ -127,6 +126,7 @@ function Meeting() {
       editVideoAudio('audioOn');
     }
   };
+
   const handleCameraToggle = () => {
     if (cameraOn) {
       console.log("handleCameraToggle::cameraOn: true ", publish);
@@ -192,6 +192,13 @@ function Meeting() {
             },
             onMemberLeft: (socketId: string) => {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
+            },
+            onNewProducer: () => {
+              console.log("setParticipants old: ", participants);
+              const newParticipants = subscribe.participants.map(participant => participant);
+              setParticipants(newParticipants);
+              console.log("setParticipants new: ", participants);
+              console.log("newParticipants: ", newParticipants);
             }
           });
 
@@ -217,21 +224,25 @@ function Meeting() {
   useEffect(() => {
     const initializePublish = async () => {
       if (deviceReady) {
-        console.log("Starting subscribe...");
-        subscribe = new Subscribe(device, connector);
-        connector.setSubscribe(subscribe);
-        await subscribe.subscribe();
-        console.log("Ending subscribe...");
-        setSubReady(true);
+        try {
+          console.log("Starting subscribe...");
+          subscribe = new Subscribe(device, connector);
+          connector.setSubscribe(subscribe);
+          await subscribe.subscribe();
+          console.log("Ending subscribe...");
+          setSubReady(true);
 
-        publish = new Publish(device, connector, localVideoRef);
-        await publish.publish(true, true)
-          .catch((error: any) => {
-            console.error("public error: ", error);
-          });
+          publish = new Publish(device, connector, localVideoRef);
+          await publish.publish(true, true)
+            .catch((error: any) => {
+              console.error("public error: ", error);
+            });
 
-        console.log("participants: ", participants);
-        console.log("subscribe: ", subscribe.participants);
+          console.log("participants: ", participants);
+          console.log("subscribe: ", subscribe.participants);
+        } catch (error: any) {
+          console.error("initializePublish error: ", error);
+        }
       }
     };
 

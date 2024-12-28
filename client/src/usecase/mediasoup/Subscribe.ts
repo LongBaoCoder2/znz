@@ -50,27 +50,13 @@ export class Subscribe {
           }
       });
 
-      // await this.getAllOtherUsers(this.connector.socketId)
       await this.consumeOtherProducers(this.connector.socketId);
-
-      
+      console.log("Participants: ", this.participants);
 
     } catch (error: any) {
       console.error('subscribe error: ', error);
     }
   }
-  // async getAllOtherUsers(socketId: string) {
-  //   try {
-  //     const response = await this.connector.sendRequest('member:getAll', { socketId: socketId })
-  //                             .catch((error: any) => {
-  //                                 console.log('getAllOtherUsers error', error);
-  //                                 return;
-  //                             });
-  //     console.log('getAllOtherUsers response:', response);
-  //   } catch (error: any) {
-  //     console.error('getAllOtherUsers error: ', error);
-  //   }
-  // }
 
   async leave() {
     try {
@@ -92,6 +78,15 @@ export class Subscribe {
     }
   }
 
+  setHostRole(newHostId: string) {
+    this.participants = this.participants.map((participant) => {
+      if (participant.socketId === newHostId) {
+        return { ...participant, role: 'host' };
+      }
+      return participant;
+    });
+  }
+
   async handleParticipantLeaving(socketId: string) {
     try {
       console.log(`Handling participant leaving: ${socketId}`);
@@ -104,14 +99,14 @@ export class Subscribe {
       this.participants = this.participants.filter((p) => p.socketId !== socketId);
 
       // Remove video consumer
-      const videoConsumer = this.videoConsumers.get(leavingParticipant.videoProducerId!);
+      const videoConsumer = this.videoConsumers.get(leavingParticipant.socketId!);
       if (videoConsumer) {
         videoConsumer.close();
         console.log(`Removed video consumer for participant: ${socketId}`);
       }
 
       // Remove audio consumer
-      const audioConsumer = this.audioConsumers.get(leavingParticipant.audioProducerId!);
+      const audioConsumer = this.audioConsumers.get(leavingParticipant.socketId!);
       if (audioConsumer) {
         audioConsumer.close();
         console.log(`Removed audio consumer for participant: ${socketId}`);
@@ -124,7 +119,6 @@ export class Subscribe {
   }
 
 
-
   async consumeOtherProducers(socketId: string) {
     const producers = await this.connector.sendRequest('getAllRemoteProducerIds', { localId: socketId })
             .catch((error: any) => {
@@ -134,27 +128,19 @@ export class Subscribe {
     console.log('otherProducers', producers);
     
 
-
     const videoIds = producers.VideoIds;
     const audioIds = producers.AudioIds;
 
     const Members = producers.Members;
-    console.log("Members: ", Members);
 
     videoIds.forEach(async (vid: any) => {
-        await this.consumeAdd(this.consumerTransport, vid, Members[vid]?.username, Members[vid]?.socketId,'video');
+        await this.consumeAdd(this.consumerTransport, vid, Members[vid]?.username, 'video');
     });
 
-    console.log("consumeOtherProducers Members: ", Members);
-    console.log("consumeOtherProducers videoIds: ", videoIds);
     audioIds.forEach(async (aid: any) => {
-        await this.consumeAdd(this.consumerTransport, aid, Members[aid]?.username, Members[aid]?.socketId,'audio');
+        await this.consumeAdd(this.consumerTransport, aid, Members[aid]?.username, 'audio');
     });
-    console.log("Object.values(Members): ", Object.values(Members));
-    console.log("this.participants: ", this.participants);
     Object.values(Members).forEach(async (member: any) => {
-      console.log("this.connector.socketId: ", this.connector.socketId);
-      console.log("member.socketId: ", member.socketId);
       if (member.socketId !== this.connector.socketId) {
         let isExist = 0;
         this.participants.forEach((participant) => {
@@ -199,51 +185,22 @@ export class Subscribe {
   }
 
   async handleNewMember(member: { username: string, socketId: string, joinedAt: Date }) {
-    console.log('Handling new member join:', member.username);
-    
-    // Get producers for the new member using getAllRemoteProducerIds
-    const producers = await this.connector.sendRequest('getAllRemoteProducerIds', { 
-      localId: this.connector.socketId 
-    }).catch((error: any) => {
-      console.log('Failed to get producers for new member:', error);
-      return null;
-    });
-
-    if (!producers) {
-      console.log('No producers found for new member');
-      return;
-    }
-
-    const { VideoIds, AudioIds, Members } = producers;
-    console.log('Producers:', VideoIds, AudioIds, Members);
+    console.log('Handling new member join:', member.username, member.socketId);
 
     const participant : Participant = { username: member.username, 
                                         socketId: member.socketId, 
-                                        videoOn: false, 
-                                        audioOn: false };
+                                        videoOn: true, 
+                                        audioOn: true,
+                                        stream: new MediaStream()
+                                      };
     this.addMember(participant);
-
-    // Process video producers
-    for (const producerId of VideoIds) {
-      if (Members[producerId]?.username === member.username) {
-        await this.consumeAdd(this.consumerTransport, producerId, member.username, member.socketId, 'video');
-      }
-    }
-
-    // Process audio producers
-    for (const producerId of AudioIds) {
-      if (Members[producerId]?.username === member.username) {
-        await this.consumeAdd(this.consumerTransport, producerId, member.username, member.socketId, 'audio');
-      }
-    }
-
     console.log('New member join handled successfully:', member.username);
   }
 
-  async consumeAdd(consumerTransport: mediaSoupTypes.Transport, producerSocketId: any, userName: any, socketId: string, tkind: string) {
+  async consumeAdd(consumerTransport: mediaSoupTypes.Transport, socketId: any, userName: any, tkind: string) {
       const { rtpCapabilities } = this.device;
       console.log("rtpCapabilities: ", rtpCapabilities);
-      const data = await this.connector.sendRequest('consumeAdd', { rtpCapabilities: rtpCapabilities, producerId: producerSocketId, kind: tkind })
+      const data = await this.connector.sendRequest('consumeAdd', { rtpCapabilities: rtpCapabilities, producerId: socketId, kind: tkind })
           .catch((err: any) => {
               console.log('consumeAdd error', err);
           });
@@ -261,10 +218,16 @@ export class Subscribe {
           kind,
           rtpParameters,
       });
+      console.log("=========================================================");
       
-      this.addSubVideo(producerSocketId, consumer.track, kind, userName, socketId);
-      this.addConsumer(producerSocketId, consumer, kind);
+      // this.addSubVideo(producerSocketId, consumer.track, kind, userName);
+      // this.addConsumer(producerSocketId, consumer, kind);
 
+      this.addSubVideo(socketId, consumer.track, kind, userName);
+      this.addConsumer(socketId, consumer, kind);
+
+      console.log("=============== addSubVideo =====================");
+      console.log('Consuming new producer: ', producerId, kind);
       consumer.on("producerclose" as any, () => {
           console.log('--consumer producer closed. remoteId=' + consumer.producerId);
           consumer.close();
@@ -276,7 +239,7 @@ export class Subscribe {
 
       if (kind === 'video') {
           console.log('--try resumeAdd --');
-          this.connector.sendRequest('resumeAdd', { producerId: producerSocketId, kind: kind })
+          this.connector.sendRequest('resumeAdd', { producerId: socketId, kind: kind })
               .then(() => {
                   console.log('resumeAdd OK');
               })
@@ -290,7 +253,7 @@ export class Subscribe {
   removeRemoteVideo(id: string) {
       console.log(' ---- removeRemoteVideo() id=' + id);
       
-      this.participants = this.participants.filter((participant) => participant.videoProducerId !== id);
+      this.participants = this.participants.filter((participant) => participant.socketId !== id);
   }
 
   removeConsumer(id: any, kind: any) {
@@ -324,54 +287,49 @@ export class Subscribe {
   }
 
     // @ts-ignore
-    async addSubVideo(producerSocketId: any, track: any, kind: any, userName: string, socketId: string) {
+    async addSubVideo(socketId: any, track: any, kind: any, userName: string) {
+        console.log("=============== addSubVideo =====================");
         
         let isExist = 0;
         
         this.participants =  this.participants.map((uv) => {
-            // if(kind == 'audio' && uv.audioProducerId == producerSocketId){
-            //     uv.stream?.addTrack(track);
-            //     isExist = 1;
-            // } else if (kind == 'video' && uv.videoProducerId == producerSocketId){
-            //     uv.stream?.addTrack(track);
-            //     isExist = 1;
-            // }
 
             if(uv.socketId == socketId){
                 uv.stream?.addTrack(track);
                 isExist = 1;
-                if (kind == 'audio') {
-                  uv.audioProducerId = producerSocketId;
-                } else if (kind == 'video') {
-                  uv.videoProducerId = producerSocketId;
-                }
+                // if (kind == 'audio') {
+                //   uv.socketId = producerSocketId;
+                // } else if (kind == 'video') {
+                //   uv.socketId = producerSocketId;
+                // }
             }
             return uv;
         })
-        
+        console.log("=============== addSubVideo sucessfully =====================");
 
         if(isExist == 0){
+            console.log("=============== add new =====================");
             const newMedia = new MediaStream();
             newMedia.addTrack(track);
-            if(kind == 'audio'){
+            // if(kind == 'audio'){
                 this.participants = [...this.participants, {
                     socketId: socketId,
-                    audioProducerId: producerSocketId,
+                    // audioProducerId: producerSocketId,
                     username: userName,
                     stream: newMedia,
                     audioOn: true,
                     videoOn: true,
                 }]
-            } else {
-                this.participants = [...this.participants, {
-                    socketId: socketId,
-                    videoProducerId: producerSocketId,
-                    username: userName,
-                    stream: newMedia,
-                    audioOn: true,
-                    videoOn: true,
-                }]
-            }
+            // } else {
+            //     this.participants = [...this.participants, {
+            //         socketId: socketId,
+            //         videoProducerId: producerSocketId,
+            //         username: userName,
+            //         stream: newMedia,
+            //         audioOn: true,
+            //         videoOn: true,
+            //     }]
+            // }
         }
     }
 }
