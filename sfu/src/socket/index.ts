@@ -1,4 +1,4 @@
-import { Server as SocketIOServer, Socket } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
 import { Room } from './room/room';
 import * as mediasoupService from './service/mediasoup.service';
 import { createWorkers } from './worker/worker';
@@ -10,6 +10,7 @@ const sfuLogger = childLogger('sfu');
 // Setup Socket Server
 export const setupSocketServer = async (httpServer: any) => {
   const io = new SocketIOServer(httpServer, {
+      path: '/socket',
       cors: {
           origin: '*'
       }
@@ -27,41 +28,99 @@ export const setupSocketServer = async (httpServer: any) => {
       // Clean up on disconnect
       socket.on('disconnect', () => {
           const roomId = socket.roomId;
-          const userEmail = socket.email;
 
           mediasoupService.clearPeer(roomId, socket);
+          socket.to(roomId).emit('member:left', { socketId: socket.id });
+          sfuLogger.info(`Client disconnected: ${socket.id}`);
           socket.leave(roomId);
-          socket.leave(userEmail);
       })
 
+      // ==================== Room ====================
       socket.on('room:setup', async (data: { roomId: string, username: string }, callback: any) => {
-        const { roomId, username } = data;
-        const room = Room.getRoomById(roomId);
-
-        socket.username = username;
-        socket.roomId = roomId;
-
-
+        const room = Room.getRoomById(data.roomId);
         if (!room) {
-          callback(null, { message: '[prepare_room] empty!', type:'empty'});
+          callback(null, { type: 'empty' });
           return;
         }
 
-        if (room.maxParticipants <= Object.keys(room.members).length) {
-            callback(null, { message: '[prepare_room] exceed!', type: 'exceed' });
-            return;
-        }
-
-        socket.join(roomId);
+        socket.roomId = data.roomId;
         const member: MemberSFU = {
-          role: 'host',
-          username: username,
           socketId: socket.id,
-        }
-        mediasoupService.addMember(roomId, member);
+          username: data.username,
+          role: 'participant',
+          status: 'pending',
+          joinedAt: new Date(),
+          isAudioMuted: false,
+          isVideoMuted: false
+        };
 
-        callback({}, null);
+        socket.join(getRoomId());
+        const addedMember = room.addMember(member);
+        sfuLogger.info(`room:setup newMember: ${JSON.stringify(addedMember)}`);
+        if (addedMember.role === 'participant') {
+          sfuLogger.info(`room:setup request to host: ${room.hostSocketId}`);
+          socket.to(room.hostSocketId!).emit('join:request', {
+            username: data.username,
+            socketId: socket.id
+          });
+        } 
+
+        callback({ status: addedMember.status, role: addedMember.role }, null);
       });
+
+      
+      socket.on('join:response', (data: { socketId: string, approved: boolean }) => {
+        const roomId = getRoomId();
+        const room = Room.getRoomById(roomId);
+        if (room?.isHost(socket.id)) {
+          room.updateMemberStatus(data.socketId, data.approved ? 'approved' : 'rejected');
+          socket.to(data.socketId).emit('join:result', { approved: data.approved });
+
+          sfuLogger.info(`join:response: ${data.approved ? 'approved' : 'rejected'} for ${data.socketId}`);
+          if (data.approved) {
+            const newMember = room.getMember(data.socketId);
+            sfuLogger.info(`${newMember?.username} joined the room`);
+            socket.emit('member:joined', {
+              username: newMember?.username,
+              socketId: data.socketId,
+              joinedAt: newMember?.joinedAt
+            })
+            socket.to(roomId).except(data.socketId).emit('member:joined', {
+              username: newMember?.username,
+              socketId: data.socketId,
+              joinedAt: newMember?.joinedAt
+            });
+            sfuLogger.info(`member:joined successfully: ${newMember?.username} joined the room`);
+          }
+        }
+      });
+
+      // ==================== Member ====================
+      // socket.on('member:remove', (data: { socketId: string }) => {
+      //   const roomId = getRoomId();
+      //   const room = Room.getRoomById(roomId);
+      //   if (room?.isHost(socket.id)) {
+      //     room.removeMember(data.socketId);
+      //     socket.to(roomId).emit('member:left', { socketId: data.socketId });
+      //   }
+      // });
+
+
+      socket.on('member:getAll', (data: any, callback: any) => {
+        const roomId = getRoomId();
+        const allMember = mediasoupService.getAllMembers(roomId);
+        
+        if (allMember) {
+          sfuLogger.info(`member:getAll: ${JSON.stringify(allMember)}`);
+          callback(Object.values(allMember)
+                   .filter(member => member.status === 'approved' && member.socketId !== socket.id), null);
+        } else {
+          sfuLogger.info('member:getAll: missing room');
+          callback(null, { message: 'Room not found' });
+        }
+      });
+
+
 
       // ==================== Router ====================
       /**
@@ -226,14 +285,21 @@ export const setupSocketServer = async (httpServer: any) => {
        */
       socket.on('getAllRemoteProducerIds', async (data: any, callback: any) => {
           const roomId = getRoomId();
-          // const clientId = data.localId;
-          const clientId = socket.id;
+          const clientId = data.localId;
+          // const clientId = socket.id;
           const otherProducersVideoIds = mediasoupService.getAllRemoteProducerIds(roomId, clientId, 'video');
           const otherProducersAudioIds = mediasoupService.getAllRemoteProducerIds(roomId, clientId, 'audio');
-          const allMembers = mediasoupService.getAllMembers(roomId);;
+          const allMembers = mediasoupService.getAllMembers(roomId);
+
+          if (!allMembers) {
+              sfuLogger.info('getAllMembers: no members');
+          }
+
+          const membersObject = Object.fromEntries(allMembers || []);
+          sfuLogger.info(`getAllMembers: ${membersObject}`);
           
 
-          callback({ VideoIds: otherProducersVideoIds, AudioIds: otherProducersAudioIds, Members: allMembers }, null);
+          callback({ VideoIds: otherProducersVideoIds, AudioIds: otherProducersAudioIds, Members: membersObject }, null);
       });
 
       /**
@@ -250,13 +316,13 @@ export const setupSocketServer = async (httpServer: any) => {
 
           let transport = mediasoupService.getConsumerTransport(roomId, clientId);
           if (!transport) {
-              sfuLogger.info('consumeAdd: transport x');
+              sfuLogger.info('consumeAdd: cannot find transport');
               return;
           }
 
           const producer = mediasoupService.getProducer(roomId, producerId, kind);
           if (!producer) {
-              sfuLogger.info('consumeAdd: producer x');
+              sfuLogger.info('consumeAdd: cannot find producer');
               return;
           }
 

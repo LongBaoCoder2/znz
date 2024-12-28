@@ -3,12 +3,16 @@ import { profile } from "../db/schemas";
 import { and, eq, gte, lte } from "drizzle-orm";
 
 // Create a new profile
-export async function createProfile(userId: number, displayName?: string, avatarUrl?: string) {
+export async function createProfile(userId: number, displayName: string, fullName: string,
+                                    email: string, phoneNumber: string, avatarUrl?: string) {
   const [newProfile] = await database
     .insert(profile)
     .values({
       userId,
       displayName,
+      fullName,
+      email,
+      phoneNumber,
       avatarUrl,
       createdAt: new Date(),
       lastLoginAt: new Date()
@@ -39,19 +43,28 @@ export async function updateProfile(profileId: number, updatedFields: Partial<ty
   await database.update(profile).set(updatedFields).where(eq(profile.id, profileId));
 }
 
-// Update last login timestamp
 export async function updateLastLogin(profileId: number) {
   await database.update(profile).set({ lastLoginAt: new Date() }).where(eq(profile.id, profileId));
 }
 
-// Update display name
 export async function updateDisplayName(profileId: number, newDisplayName: string) {
   await database.update(profile).set({ displayName: newDisplayName }).where(eq(profile.id, profileId));
 }
 
-// Update avatar URL
 export async function updateAvatarUrl(profileId: number, newAvatarUrl: string) {
   await database.update(profile).set({ avatarUrl: newAvatarUrl }).where(eq(profile.id, profileId));
+}
+
+export async function updateLastLoginByUserId(userId: number) {
+  await database.update(profile).set({ lastLoginAt: new Date() }).where(eq(profile.userId, userId));
+}
+
+export async function updateDisplayNameByUserId(userId: number, newDisplayName: string) {
+  await database.update(profile).set({ displayName: newDisplayName }).where(eq(profile.userId, userId));
+}
+
+export async function updateAvatarUrlByUserId(userId: number, newAvatarUrl: string) {
+  await database.update(profile).set({ avatarUrl: newAvatarUrl }).where(eq(profile.userId, userId));
 }
 
 // Delete a profile

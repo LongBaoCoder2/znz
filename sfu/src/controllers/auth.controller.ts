@@ -26,12 +26,6 @@ class AuthController {
       // Gọi AuthService để xử lý đăng nhập
       const { accessToken, refreshToken, user } = await this.authService.login(userData);
 
-      // Thiết lập Access Token và Refresh Token trong cookie
-      // res.setHeader("Set-Cookie", [
-      //   `Authorization=${accessToken}; Max-Age=900; HttpOnly; Path=/`, // Access token hết hạn sau 15 phút
-      //   `Refresh=${refreshToken}; Max-Age=${7 * 24 * 60 * 60}; HttpOnly; Path=/refresh` // Refresh token hết hạn sau 7 ngày
-      // ]);
-
       // Lưu Access Token và Refresh Token vào cookie
       res.cookie("Authorization", accessToken, { httpOnly: true, maxAge: 15 * 60 * 1000, path: "/" }); // 15 phút
       res.cookie("Refresh", refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, path: "/refresh" }); // 7 ngày
@@ -42,7 +36,6 @@ class AuthController {
         user: {
           id: user.id,
           username: user.username,
-          email: user.email
         },
         accessToken,
         refreshToken

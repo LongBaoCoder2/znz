@@ -10,11 +10,12 @@ import Cookies from "js-cookie";
 function SignIn() {
   let navigate = useNavigate();
 
-  useEffect(() => {
-    if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
-      navigate("/home");
-    }
-  }, []);
+
+  // useEffect(() => {
+  //   if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
+  //     navigate("/home");
+  //   }
+  // }, []);
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -43,8 +44,12 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
-      Cookies.set('accessToken', response.data.accessToken, { expires: 7 });
-      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7 });
+      console.log(Cookies.get('accessToken'));
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
+      Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
+      console.log(Cookies.get('accessToken'));
       navigate("/home");
     }
     catch (error) {
@@ -79,16 +84,25 @@ function SignIn() {
 
     try {
       const response = await axios.post<SignUpResponse>(getURL("/auth/signup"), {
-        email: "example123@gmail.com",
         username: signUpUsername,
         password: signUpPassword,
       });
       console.log(response);
       if (response.status === 201) {
+        const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
+          username: signUpUsername,
+          password: signUpPassword,
+        });
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
+        Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
         navigate("/signup");
       }
     }
     catch (error) {
+      setSignUpUsernameFailedMessage("*Tên đăng nhập đã tồn tại, vui lòng chọn tên đăng nhập khác!");
+      setIsSignUpUsernameValid(false);
       console.error(error);
     }
   };

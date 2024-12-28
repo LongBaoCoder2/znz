@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Form, ButtonGroup, Button, Image, Modal } from "react-bootstrap";
 import JoinImage from "../assets/join.svg";
 import HostImage from "../assets/host.svg";
+import axios from "axios";
+import getURL from "../axios/network";
+import { GetProfileResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function Home() {
+  const accessToken = Cookies.get("accessToken");
   const [avatar, setAvatar] = useState("https://placehold.co/400");
   const [fullName, setFullName] = useState("Thái Văn Mạnh");
   const [isFullNameValid, setIsFullNameValid] = useState(true);
@@ -18,6 +23,30 @@ function Home() {
   const [passwordModalShow, setPasswordModalShow] = useState(false);
   const [hostMeetingModalShow, setHostMeetingModalShow] = useState(false);
   const [editProfileModalShow, setEditProfileModalShow] = useState(false);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      try {
+        const response = await axios.get<GetProfileResponse>(getURL("/profile"),
+          {
+            headers: {
+              "Authorization": `Bearer ${accessToken}`,
+            }
+          }
+        );
+        console.log(response);
+        setFullName(response.data.data.fullName);
+        setDisplayName(response.data.data.displayName);
+        setEmail(response.data.data.email);
+        setPhoneNumber(response.data.data.phoneNumber);
+        setAvatar(response.data.data.avatarUrl);
+      }
+      catch (error) {
+        console.error(error);
+      }
+    };
+    getProfile();
+  }, []);
 
   const handleSignUp = () => {
     if (fullName.length === 0) {

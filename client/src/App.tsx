@@ -20,7 +20,6 @@ function App() {
 
   return (
     <>
-      <VideoConference></VideoConference>
     </>
   );
 }

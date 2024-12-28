@@ -1,23 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button, Image, Modal } from "react-bootstrap";
 import AboutUsImage from "../assets/about-us.png";
+import axios from "axios";
+import getURL from "../axios/network";
+import { CreateProfileResponse } from "../axios/interface";
+import Cookies from "js-cookie";
 
 function SignUp() {
   const [fullName, setFullName] = useState("");
   const [isFullNameValid, setIsFullNameValid] = useState(true);
+  const [displayName, setDisplayName] = useState("");
+  const [isDisplayNameValid, setIsDisplayNameValid] = useState(true);
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const [modalShow, setModalShow] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (fullName.length === 0) {
       setIsFullNameValid(false);
       return;
     }
-    setIsFullNameValid(true);
-    setIsEmailValid(!isEmailValid);
+    if (displayName.length === 0) {
+      setIsDisplayNameValid(false);
+      return;
+    }
+    if (email.length === 0) {
+      setIsEmailValid(false);
+      return;
+    }
+    try {
+
+      const accessToken = Cookies.get("accessToken");
+      console.log(accessToken);
+      const response = await axios.post<CreateProfileResponse>(getURL("/profile"), {
+        displayName: displayName,
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+      },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        }
+      );
+      console.log(response);
+    }
+    catch (error) {
+      console.error(error);
+    }
 
     setModalShow(true);
   };
@@ -47,7 +80,7 @@ function SignUp() {
           <h1 className="align-self-start mt-5 ms-5 text-primary">
             ZNZ
           </h1>
-          <h2 className="text-primary my-5">
+          <h2 className="text-primary my-4">
             Đăng ký
           </h2>
           <span className="mb-4">
@@ -63,11 +96,29 @@ function SignUp() {
                 onChange={e => {
                   setIsFullNameValid(true);
                   setFullName(e.target.value);
+                  setDisplayName(e.target.value);
                 }}
               />
               {!isFullNameValid && (
                 <Form.Text className="text-danger">
                   *Họ và tên không được để trống
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-medium">Tên hiển thị</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Họ và tên"
+                value={displayName}
+                onChange={e => {
+                  setIsDisplayNameValid(true);
+                  setDisplayName(e.target.value);
+                }}
+              />
+              {!isDisplayNameValid && (
+                <Form.Text className="text-danger">
+                  *Tên hiển thị không được để trống
                 </Form.Text>
               )}
             </Form.Group>
