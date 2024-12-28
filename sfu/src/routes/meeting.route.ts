@@ -5,5 +5,9 @@ const path = "/meeting/";
 const meetingRoute = Router();
 
 meetingRoute.post(path, meetingController.createMeetingHandler);
+meetingRoute.post(path + "join", (req, res, next) => {
+  meetingController.joinMeetingHandler(req, res).catch(next); 
+});
+
 
 export default meetingRoute;

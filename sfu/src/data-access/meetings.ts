@@ -19,7 +19,13 @@ export async function createMeeting(
 
   let passwordHash: string | null = null;
 
-  if (!password) {
+  let hasCustomPassword = false;
+
+  if (password) {
+    // Nếu người dùng cung cấp mật khẩu
+    hasCustomPassword = true;
+  } else {
+    // Nếu không có mật khẩu, tự động tạo
     password = crypto.randomBytes(8).toString("hex");
   }
 
@@ -36,6 +42,7 @@ export async function createMeeting(
       host: hostId,
       createdAt: new Date(),
       status: "created",
+      hasCustomPassword
     })
     .returning();
 
