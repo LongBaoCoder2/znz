@@ -16,9 +16,9 @@ class MeetingService {
     const createTitle = title ? title : "New Meeting";
     const uri = generateMeetingID();
     try {
-      const newMeeting = await createMeeting(createTitle, displayId, uri, hostId, hostName, password);
-      const passwordRoom = "";
-      const { roomId, room } = await setupRoom(createTitle, newMeeting.uri, newMeeting.host, passwordRoom);
+      const { roomId, room } = await setupRoom(createTitle, uri, hostId, password as string);
+      const uriRoom = roomId;
+      const newMeeting = await createMeeting(createTitle, displayId, uriRoom, hostId, hostName, password);
 
       return { roomId, newMeeting };
     } catch (error: any) {
