@@ -1,17 +1,13 @@
 import { CreateMeetingDto } from "@sfu/dtos/meeting.dto";
 import { createMeeting, verifyMeetingPassword } from "@sfu/data-access/meetings";
-import { generateMeetingID } from "@sfu/utils/crypt";
-import { setupRoom } from "@sfu/socket/room/room";
 import { getMeetingById } from "@sfu/data-access/meetings";
+import { generateMeetingID } from "@sfu/utils/crypt";
+import { setupRoom } from "@sfu/utils/setupRoom";
 
 
 class MeetingService {
   async createMeeting(hostId: number, hostName: string, meetingDto: CreateMeetingDto) {
     const { title, displayId, password } = meetingDto;
-
-    // Dev
-    // const hostId = hostId;
-    // const hostId = req.user.id;
 
     const createTitle = title ? title : "New Meeting";
     const uri = generateMeetingID();

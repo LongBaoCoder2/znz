@@ -5,17 +5,11 @@ import AboutUsImage from "../assets/about-us.png";
 import axios from "axios";
 import getURL from "../axios/network";
 import { SignInResponse, SignUpResponse } from "../axios/interface";
-import Cookies from "js-cookie";
+import { useAuth } from "../store/AuthContext";
 
 function SignIn() {
   let navigate = useNavigate();
-
-
-  // useEffect(() => {
-  //   if (Cookies.get('accessToken') && Cookies.get('refreshToken')) {
-  //     navigate("/home");
-  //   }
-  // }, []);
+  const { login } = useAuth();
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -44,12 +38,8 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
-      console.log(Cookies.get('accessToken'));
-      Cookies.remove('accessToken');
-      Cookies.remove('refreshToken');
-      Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
-      Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
-      console.log(Cookies.get('accessToken'));
+
+      login(response.data);
       navigate("/home");
     }
     catch (error) {
@@ -93,10 +83,7 @@ function SignIn() {
           username: signUpUsername,
           password: signUpPassword,
         });
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
-        Cookies.set('accessToken', response.data.accessToken, { expires: 1 });
-        Cookies.set('refreshToken', response.data.refreshToken, { expires: 1 });
+        login(response.data);
         navigate("/signup");
       }
     }

@@ -18,7 +18,7 @@ const authMiddleware = async (
 
     if (Authorization !== null) {
       sfuLogger.info(`getInAuth`);
-      const secretKey: string = process.env.SECRET_KEY || "Hi";
+      const secretKey: string = process.env.SECRET_KEY || "secret";
       const verificationResponse = jwt.verify(Authorization, secretKey) as DataStoredInToken;
       const userId = verificationResponse._id;
       sfuLogger.info(`userId: ${userId}`);
