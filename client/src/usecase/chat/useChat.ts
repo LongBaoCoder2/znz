@@ -42,6 +42,7 @@ export const useChat = (chatService: ChatService) => {
     try {
       const response = await chatService.sendMessage(content);
       if (response.success && response.message) {
+        // @ts-ignore
         setMessages(prev => [...prev, response.message]);
         return true;
       } else if (response.error) {
