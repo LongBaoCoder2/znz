@@ -48,6 +48,10 @@ export class Connector {
       this.subscribe = subscribe;
   }
 
+  disconnect() {
+    this.socket.disconnect();
+  }
+
   connectServer() {
     return new Promise((resolve: any, reject: any) => {
 

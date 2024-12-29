@@ -67,8 +67,8 @@ export class Subscribe {
         consumer.close();
       });
 
-      await this.connector.sendRequest('leave', { socketId: this.connector.socketId });
-
+      // await this.connector.sendRequest('leave', { socketId: this.connector.socketId });
+      this.consumerTransport.close();
       this.videoConsumers.clear();
       this.audioConsumers.clear();
       this.participants = [];
