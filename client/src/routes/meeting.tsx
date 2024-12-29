@@ -243,15 +243,23 @@ function Meeting() {
           // Error handle - notify modal when failed
           if (error instanceof MediasoupError) {
             switch (error.kind) {
-              case MediasoupErrorKind.DeviceLoadFailed:
+              case MediasoupErrorKind.ROOM_NOT_FOUND:
                 setCameraOn(false);
                 setMicOn(false);
                 setModalMessage(error.message);
                 setModalType('error');
                 setShowMessageModal(true);
+
+                navigate("/");
                 break;
-              case MediasoupErrorKind.RtpCapabilitiesFailed:
-                // Handle RTP capabilities failure
+              case MediasoupErrorKind.ROOM_IS_FULL:
+                setCameraOn(false);
+                setMicOn(false);
+                setModalMessage(error.message);
+                setModalType('error');
+                setShowMessageModal(true);
+
+                navigate("/");
                 break;
               // ... handle other cases
             }

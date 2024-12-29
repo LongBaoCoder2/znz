@@ -12,11 +12,10 @@ function App() {
   const session = false;
   useEffect(() => {
     if (!session) {
-      navigate("/signin");
+      navigate("/home");
     }
   }, []);
 
-  const [count, setCount] = useState(0);
 
   return (
     <>
