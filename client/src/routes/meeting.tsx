@@ -224,9 +224,11 @@ function Meeting() {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
             },
             onNewProducer: () => {
-              const newParticipants = subscribe.participants.map(participant => participant);
-              setParticipants(newParticipants);
-            }
+              setParticipants(subscribe.participants);
+            },
+            onSetStateParticipants: () => {
+              setParticipants(subscribe.participants);
+            },
           });
 
           await connector.connectServer();
@@ -357,6 +359,7 @@ function Meeting() {
       publish.localStream.getAudioTracks()[0].enabled = false;
     }
   };
+
 
   const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);

@@ -21,6 +21,7 @@ interface ConnectorEvents {
   onMemberLeft?: (socketId: string) => void;
   onHostChanged?: () => void;
   onNewProducer?: () => void;
+  onSetStateParticipants?: () => void;
 }
 
 export class Connector {
@@ -189,6 +190,8 @@ export class Connector {
               }
               return uv;
           });
+
+          this.events?.onSetStateParticipants?.();
       });
 
       this.socket.on('producerAudioOn', (message: any) => {
@@ -200,6 +203,8 @@ export class Connector {
               }
               return uv;
           });
+
+          this.events?.onSetStateParticipants?.();
       });
 
       this.socket.on('producerVideoOff', (message: any) => {
@@ -211,6 +216,8 @@ export class Connector {
               }
               return uv;
           });
+          
+          this.events?.onSetStateParticipants?.();
       });
 
 
@@ -223,6 +230,8 @@ export class Connector {
               }
               return uv;
           });
+
+          this.events?.onSetStateParticipants?.();
       });
 
     });

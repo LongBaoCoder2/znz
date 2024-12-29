@@ -361,6 +361,11 @@ export const getAllMembers = (roomId: string) => {
   return room?.members;
 }
 
+export const getMember = (roomId: string, clientId: string) => {
+  const room = Room.getRoomById(roomId);
+  return room?.members.get(clientId);
+}
+
 export const getRooms = () => {
   return Room.rooms;
 }

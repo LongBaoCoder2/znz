@@ -117,6 +117,7 @@ export class Publish {
           const trackParam = { track: audioTrack };
           const producer = await this.producerTransport.produce(trackParam);
           this.producers.set("audio", producer);
+
         }
       } else {
         throw new Error("Audio is not available or in use");
@@ -142,6 +143,9 @@ export class Publish {
     const producer = this.producers.get(kind);
     if (producer) {
       producer.resume();
+
+      const eventName = kind === 'video' ? 'myVideoOn' : 'myAudioOn';
+      this.connector.sendRequest(eventName, {});
     } else {
       console.error('resumeProducer() | producer NOT FOUND');
     }
@@ -151,8 +155,13 @@ export class Publish {
     const producer = this.producers.get(kind);
     if (producer) {
       producer.pause();
+
+      const eventName = kind === 'video' ? 'myVideoOff' : 'myAudioOff';
+      this.connector.sendRequest(eventName, {});
     } else {
       console.error('pauseProducer() | producer NOT FOUND');
     }
   }
 };
+
+
