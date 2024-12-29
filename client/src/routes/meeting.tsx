@@ -1,4 +1,4 @@
-import { Container, Row, Col, Form, ButtonGroup, Button, Image, Card, OverlayTrigger, Popover, Offcanvas, Modal } from "react-bootstrap";
+import { Container, Row, Col, Button, Image, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
 import addParticipantImage from "../assets/add-participant.svg";
 import microphoneOffImage from "../assets/microphone-off.svg";
 import microphoneOnImage from "../assets/microphone-on.svg";
@@ -25,12 +25,13 @@ import MessageModalContainer from "../components/MessageModal";
 // Chat Service
 import { ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
+import { useAuth } from "../store/AuthContext";
 
 export let connector: Connector;
 let publish: Publish | null = null;
 let subscribe: Subscribe;
 let device: MediasoupDevice;
-let chatService: ChatService;
+export let chatService: ChatService;
 
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -91,6 +92,9 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
 function Meeting() {
   const { URI } = useParams();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const username = user?.displayName || "Participant";
+
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
@@ -115,6 +119,7 @@ function Meeting() {
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
   
+
   const initializeDevice = async () => {
     try {
       const routerRtpCapabilities = await connector.sendRequest('getRouterRtpCapabilities', {});
@@ -134,8 +139,8 @@ function Meeting() {
   };
 
   useEffect(() => {
-    console.log("participants updated: ", participants);
-  }, [participants]);
+    if (loading) return; 
+  }, [loading]);
 
   // Handler functions
   const handleMicToggle = () => {
@@ -152,12 +157,10 @@ function Meeting() {
 
   const handleCameraToggle = () => {
     if (cameraOn) {
-      console.log("handleCameraToggle::cameraOn: true ", publish);
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
     } else {
-      console.log("handleCameraToggle::cameraOn: false ", publish);
       publish?.resumeProducer("video");
       console.log(localVideoRef.current);
       setCameraOn(true);
@@ -186,7 +189,9 @@ function Meeting() {
     async function initializeSocket() {
       if (URI) {
         try {
-          connector = new Connector(URI, "Long Bao", {
+          console.log("user: ", user);
+          console.log("username: ", username);
+          connector = new Connector(URI, username, {
             onWaitingApproval: () => {
               console.log("connector.role: ", connector.role);
               setShowWaitingModal(true);
@@ -219,11 +224,8 @@ function Meeting() {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
             },
             onNewProducer: () => {
-              console.log("setParticipants old: ", participants);
               const newParticipants = subscribe.participants.map(participant => participant);
               setParticipants(newParticipants);
-              console.log("setParticipants new: ", participants);
-              console.log("newParticipants: ", newParticipants);
             }
           });
 
@@ -233,7 +235,6 @@ function Meeting() {
           const newChatService = new ChatService(connector.socket);
           setChatService(newChatService);
 
-          console.log("connector.role: ", connector.role);
           if (connector.role === 'host') {
             await initializeDevice();
           }
@@ -243,7 +244,6 @@ function Meeting() {
           if (error instanceof MediasoupError) {
             switch (error.kind) {
               case MediasoupErrorKind.DeviceLoadFailed:
-                console.log("Device load failed: ", error);
                 setCameraOn(false);
                 setMicOn(false);
                 setModalMessage(error.message);
@@ -274,27 +274,19 @@ function Meeting() {
     const initializePublish = async () => {
       if (deviceReady) {
         try {
-          console.log("Starting subscribe...");
           subscribe = new Subscribe(device, connector);
           connector.setSubscribe(subscribe);
           await subscribe.subscribe();
-          console.log("Ending subscribe...");
           setSubReady(true);
 
           publish = new Publish(device, connector, localVideoRef);
           await publish.publish(true, true)
-
-          console.log("participants: ", participants);
-          console.log("subscribe: ", subscribe.participants);
         } catch (error: any) {
 
           // Error handle - notify modal when failed
-          console.log("Error here");
           if (error instanceof MediasoupError) {
-            console.log("Error here 1");
             switch (error.kind) {
               case MediasoupErrorKind.DeviceLoadFailed:
-                console.log("Device load failed: ", error);
                 setCameraOn(false);
                 setMicOn(false);
                 setModalMessage(error.message);
@@ -316,8 +308,6 @@ function Meeting() {
 
   useEffect(() => {
     if (subReady) {
-      console.log("participants: ", participants);
-      console.log("subscribe: ", subscribe.participants);
       const updateVideo = setInterval(() => {
         setParticipants(subscribe.participants);
       }, 1000);
@@ -372,6 +362,22 @@ function Meeting() {
     setViewParticipantsShow(true);
   };
 
+  if (loading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <Row>
+          <Col className="text-center">
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+            {/* <p className="mt-2">Loading your profile...</p> */}
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
+
   return (
     <Container fluid className="vh-100 d-flex flex-column">
       <Row style={{ flex: 1 }} className="align-items-center ps-3">
@@ -384,7 +390,7 @@ function Meeting() {
         <Col className="col-9">
           <MyCard
             videoRef={localVideoRef}
-            username="Long Bao"
+            username={username}
             micOn={micOn}
             cameraOn={cameraOn}
           />
@@ -457,7 +463,7 @@ function Meeting() {
       </Row>
 
       
-      // Chat panel 
+      {/* Chat panel */}
       <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Participants</Offcanvas.Title>
@@ -478,7 +484,7 @@ function Meeting() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      // Chat panel
+      {/* Chat panel */}
       <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Chat</Offcanvas.Title>
@@ -513,7 +519,7 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      // Message Modal - (should place in App.tsx) 
+      {/* Message Modal - (should place in App.tsx)  */}
       <MessageModalContainer
         type={modalType}
         message={modalMessage}

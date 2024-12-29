@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Form, ButtonGroup, Button, Image, Modal } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Image, Modal, Spinner } from "react-bootstrap";
 import JoinImage from "../assets/join.svg";
 import HostImage from "../assets/host.svg";
 import axios from "axios";
 import getURL from "../axios/network";
 import { GetProfileResponse } from "../axios/interface";
-import Cookies from "js-cookie";
+import { useAuth } from "../store/AuthContext";
+import { useNavigate } from "react-router";
 
 function Home() {
-  const accessToken = Cookies.get("accessToken");
+  const navigate = useNavigate();
+  const { isAuthenticated, user, accessToken, loading } = useAuth();
+
   const [avatar, setAvatar] = useState("https://placehold.co/400");
   const [fullName, setFullName] = useState("Thái Văn Mạnh");
   const [isFullNameValid, setIsFullNameValid] = useState(true);
@@ -26,6 +29,16 @@ function Home() {
 
   useEffect(() => {
     const getProfile = async () => {
+      if (loading) return; 
+
+      if (!isAuthenticated || !user) {
+        navigate('/signin');
+        return;
+      }
+
+       console.log("user: ", user);
+
+
       try {
         const response = await axios.get<GetProfileResponse>(getURL("/profile"),
           {
@@ -46,7 +59,7 @@ function Home() {
       }
     };
     getProfile();
-  }, []);
+  }, [loading, isAuthenticated, user]);
 
   const handleSignUp = () => {
     if (fullName.length === 0) {
@@ -56,6 +69,21 @@ function Home() {
     setIsFullNameValid(true);
     setIsEmailValid(!isEmailValid);
   };
+
+  if (loading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <Row>
+          <Col className="text-center">
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+            {/* <p className="mt-2">Loading your profile...</p> */}
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="vh-100">
