@@ -95,6 +95,9 @@ function Meeting() {
   const { user, loading } = useAuth();
   const username = user?.displayName || "Participant";
 
+  // const mountedRef = useRef(true);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
@@ -181,6 +184,7 @@ function Meeting() {
       }
       setJoinStatus(null);
       setShowWaitingModal(false);
+      // mountedRef.current = false;
     };
   }, []);
 
@@ -224,9 +228,11 @@ function Meeting() {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
             },
             onNewProducer: () => {
-              const newParticipants = subscribe.participants.map(participant => participant);
-              setParticipants(newParticipants);
-            }
+              setParticipants(subscribe.participants);
+            },
+            onSetStateParticipants: () => {
+              setParticipants(subscribe.participants);
+            },
           });
 
           await connector.connectServer();
@@ -358,12 +364,46 @@ function Meeting() {
     }
   };
 
+
   const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
 
-  const handleEndCallClick = () => {
-    console.log("End Call");
+  const handleEndCallClick = async () => {
+    setIsDisconnecting(true);
+    try {
+      if (publish) {
+        await publish.stopPublishing();
+      }
+      if (subscribe) {
+        await subscribe.leave();
+      }
+      if (connector) {
+        connector.disconnect();
+      }
+      // Reset states
+      setParticipants([]);
+      setCameraOn(false);
+      setMicOn(false);
+      // Close modals
+      setShowMessageModal(false);
+      setShowWaitingModal(false);
+      setShowRequestsModal(false);
+      // Clear local video element
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = null;
+      }
+
+      navigate("/home");
+      // if (mountedRef.current) {
+      //   navigate("/");
+      // }
+    } catch (error) {
+      console.error('Error during disconnection:', error);
+      // Optionally notify the user
+    } finally {
+      setIsDisconnecting(false);
+    }
   };
 
   const handleViewParticipantsClick = () => {
@@ -449,12 +489,16 @@ function Meeting() {
           />
         </Col>
         <Col className="col-1">
-          <Image
+          {/* <Image
             src={endCallImage}
             className="w-100"
             style={{ cursor: "pointer" }}
             onClick={handleEndCallClick}
-          />
+          /> */}
+
+          <Button disabled={isDisconnecting} onClick={handleEndCallClick}>
+            {isDisconnecting ? 'Ending Call...' : 'End Call'}
+          </Button>
         </Col>
         <Col className="col-2 offset-2 d-flex justify-content-around">
           <Image

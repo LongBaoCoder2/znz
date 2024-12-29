@@ -376,6 +376,10 @@ const setupMediasoupHandler = (sfuListener: any) => {
 
         if(producer && !producer.paused){
             producer.pause();
+            const member = mediasoupService.getMember(roomId, socket.id);
+            if (member) {
+              member.isVideoMuted = true;
+            }
         }
         socket.broadcast.to(roomId).emit('producerVideoOff', { 
             socketId: socket.id
@@ -388,6 +392,10 @@ const setupMediasoupHandler = (sfuListener: any) => {
         const producer = mediasoupService.getProducer(roomId, socket.id, 'video');
         if(producer && producer.paused){
             producer.resume();
+            const member = mediasoupService.getMember(roomId, socket.id);
+            if (member) {
+              member.isVideoMuted = false;
+            }
         }
         socket.broadcast.to(roomId).emit('producerVideoOn', { 
             socketId: socket.id
@@ -400,6 +408,10 @@ const setupMediasoupHandler = (sfuListener: any) => {
         const producer = mediasoupService.getProducer(roomId, socket.id, 'audio');
         if(producer && !producer.paused){
             producer.pause();
+            const member = mediasoupService.getMember(roomId, socket.id);
+            if (member) {
+              member.isAudioMuted = true;
+            }
         }
         socket.broadcast.to(roomId).emit('producerAudioOff', { 
             socketId: socket.id
@@ -412,6 +424,10 @@ const setupMediasoupHandler = (sfuListener: any) => {
         const producer = mediasoupService.getProducer(roomId, socket.id, 'audio');
         if(producer && producer.paused){  
             producer.resume();
+            const member = mediasoupService.getMember(roomId, socket.id);
+            if (member) {
+              member.isAudioMuted = false;
+            }
         }
         socket.broadcast.to(roomId).emit('producerAudioOn', { 
             socketId: socket.id
