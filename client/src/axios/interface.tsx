@@ -33,6 +33,17 @@ export interface CreateProfileResponse {
   message: string,
 }
 
+
+export interface UserStoreData {
+  id: number,
+  displayName: string,
+  fullName: string,
+  phoneNumber: string,
+  avatarUrl: string,
+  username: string,
+  email: string
+}
+
 export interface GetProfileResponse {
   data: {
     id: number,
