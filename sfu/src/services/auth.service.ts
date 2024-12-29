@@ -22,7 +22,7 @@ class AuthService {
   // acccess token
   public createToken(user: User): TokenData {
     const dataStoredInToken: DataStoredInToken = { _id: user.id };
-    const secretKey: string = process.env.SECRECT_KEY || "HI";
+    const secretKey: string = process.env.SECRET_KEY || "secret";
     sfuLogger.info("createToken - secretKey: " + secretKey);
     const expiresIn: number = 15 * 60; // 15p
     const token = jwt.sign(dataStoredInToken, secretKey, { expiresIn });

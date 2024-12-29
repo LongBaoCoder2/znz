@@ -18,14 +18,19 @@ import { MicFill, MicMuteFill, CameraVideoFill, CameraVideoOffFill, DisplayFill,
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
-// import MyCard from "../components/MyCard";
 
+// Error handle - notify modal when failed
+import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
+import MessageModalContainer from "../components/MessageModal";
+// Chat Service
+import { ChatService, useChat } from "../usecase/chat";
+import { ChatPanel } from "../components/ChatPanel";
 
 export let connector: Connector;
 let publish: Publish | null = null;
 let subscribe: Subscribe;
 let device: MediasoupDevice;
-
+let chatService: ChatService;
 
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -99,6 +104,17 @@ function Meeting() {
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [showRequestsModal, setShowRequestsModal] = useState(false);
 
+  // A modal to show messages: error or success
+  // Example: new member joined or error when setting device
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [modalType, setModalType] = useState<'error' | 'success'>('success');
+  const [modalMessage, setModalMessage] = useState('');
+
+
+  const [showChat, setShowChat] = useState(false);
+  const [chatService, setChatService] = useState<ChatService | null>(null);
+  const { messages, sendMessage } = useChat(chatService as any);
+  
   const initializeDevice = async () => {
     try {
       const routerRtpCapabilities = await connector.sendRequest('getRouterRtpCapabilities', {});
@@ -107,7 +123,14 @@ function Meeting() {
       setDeviceReady(true);
     } catch (error) {
       console.error("[error] Device initialization failed:", error);
+      throw MediasoupError.deviceLoad(error);
     }
+  };
+
+  const notifyNewParticipant = (username: string) => {
+    setModalMessage(`${username} has joined the room`);
+    setModalType('success');
+    setShowMessageModal(true);
   };
 
   useEffect(() => {
@@ -188,7 +211,9 @@ function Meeting() {
               socketId: string,
               joinedAt: Date;
             }) => {
+              // Show modal for notifying the user joins 
               console.log(`New member joined: ${member.username}`);
+              notifyNewParticipant(member.username);
             },
             onMemberLeft: (socketId: string) => {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
@@ -204,20 +229,44 @@ function Meeting() {
 
           await connector.connectServer();
 
+          // Chat Service to connect to the server
+          const newChatService = new ChatService(connector.socket);
+          setChatService(newChatService);
+
           console.log("connector.role: ", connector.role);
           if (connector.role === 'host') {
             await initializeDevice();
           }
-          // }
         } catch (error) {
-          console.error("[error] Failed to initialize:", error);
+
+          // Error handle - notify modal when failed
+          if (error instanceof MediasoupError) {
+            switch (error.kind) {
+              case MediasoupErrorKind.DeviceLoadFailed:
+                console.log("Device load failed: ", error);
+                setCameraOn(false);
+                setMicOn(false);
+                setModalMessage(error.message);
+                setModalType('error');
+                setShowMessageModal(true);
+                break;
+              case MediasoupErrorKind.RtpCapabilitiesFailed:
+                // Handle RTP capabilities failure
+                break;
+              // ... handle other cases
+            }
+          }
         }
       }
     }
 
     initializeSocket();
-  }, [URI]);
 
+    // Cleanup
+    return () => {
+      chatService?.dispose();
+    };
+  }, [URI]);
 
 
 
@@ -234,14 +283,30 @@ function Meeting() {
 
           publish = new Publish(device, connector, localVideoRef);
           await publish.publish(true, true)
-            .catch((error: any) => {
-              console.error("public error: ", error);
-            });
 
           console.log("participants: ", participants);
           console.log("subscribe: ", subscribe.participants);
         } catch (error: any) {
-          console.error("initializePublish error: ", error);
+
+          // Error handle - notify modal when failed
+          console.log("Error here");
+          if (error instanceof MediasoupError) {
+            console.log("Error here 1");
+            switch (error.kind) {
+              case MediasoupErrorKind.DeviceLoadFailed:
+                console.log("Device load failed: ", error);
+                setCameraOn(false);
+                setMicOn(false);
+                setModalMessage(error.message);
+                setModalType('error');
+                setShowMessageModal(true);
+                break;
+              case MediasoupErrorKind.RtpCapabilitiesFailed:
+                // Handle RTP capabilities failure
+                break;
+              // ... handle other cases
+            }
+          }
         }
       }
     };
@@ -296,12 +361,8 @@ function Meeting() {
   };
 
   const [title, setTitle] = useState("ZNZ");
-  const [microphoneState, setMicrophoneState] = useState(false);
-  const [cameraState, setCameraState] = useState(false);
-  const [shareScreenState, setShareScreenState] = useState(false);
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
-  const [message, setMessage] = useState("");
 
   const handleEndCallClick = () => {
     console.log("End Call");
@@ -309,14 +370,6 @@ function Meeting() {
 
   const handleViewParticipantsClick = () => {
     setViewParticipantsShow(true);
-  };
-
-  const handleMessageClick = () => {
-    setViewMessagesShow(true);
-  };
-
-  const handleSendMessageClick = () => {
-    console.log("Send Message");
   };
 
   return (
@@ -366,17 +419,17 @@ function Meeting() {
         </Col>
         <Col className="col-2 offset-2 d-flex justify-content-around">
           <Image
-            src={microphoneState ? microphoneOnImage : microphoneOffImage}
+            src={micOn ? microphoneOnImage : microphoneOffImage}
             style={{ width: "20%", cursor: "pointer" }}
             onClick={handleMicToggle}
           />
           <Image
-            src={cameraState ? cameraOnImage : cameraOffImage}
+            src={cameraOn ? cameraOnImage : cameraOffImage}
             style={{ width: "20%", cursor: "pointer" }}
             onClick={handleCameraToggle}
           />
           <Image
-            src={shareScreenState ? shareScreenOnImage : shareScreenOffImage}
+            src={screenSharing ? shareScreenOnImage : shareScreenOffImage}
             style={{ width: "20%", cursor: "pointer" }}
             onClick={handleScreenSharingToggle}
           />
@@ -398,11 +451,13 @@ function Meeting() {
           <Image
             src={viewMessagesImage}
             style={{ width: "20%", cursor: "pointer" }}
-            onClick={handleMessageClick}
+            onClick={() => setShowChat(!showChat)}
           />
         </Col>
       </Row>
 
+      
+      // Chat panel 
       <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Participants</Offcanvas.Title>
@@ -423,19 +478,22 @@ function Meeting() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      {/* <JoinRequestModal
-        show={showJoinRequestModal}
-        onHide={() => setShowJoinRequestModal(false)}
-        onApprove={() => {
-          connector.socket.emit('join:response', { approved: true });
-          setShowJoinRequestModal(false);
-        }}
-        onReject={() => {
-          connector.socket.emit('join:response', { approved: false });
-          setShowJoinRequestModal(false);
-        }}
-        username={"Long Bao"}
-      /> */}
+      // Chat panel
+      <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end">
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Chat</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          {chatService && (
+            <ChatPanel
+              messages={messages}
+              onSendMessage={sendMessage}
+              currentUserId={connector?.socket.id || ''}
+            />
+          )}
+        </Offcanvas.Body>
+      </Offcanvas>
+
       {connector?.role === 'host' && joinRequests.length > 0 && (
         <Button
           variant="primary"
@@ -454,6 +512,14 @@ function Meeting() {
       />
 
       <WaitingApprovalModal show={showWaitingModal} />
+
+      // Message Modal - (should place in App.tsx) 
+      <MessageModalContainer
+        type={modalType}
+        message={modalMessage}
+        showMessageModel={showMessageModal}
+        setShowMessageModal={setShowMessageModal}
+      />
     </Container >
   );
 };

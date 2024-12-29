@@ -364,3 +364,9 @@ export const getAllMembers = (roomId: string) => {
 export const getRooms = () => {
   return Room.rooms;
 }
+
+
+export const getMemberSize = (roomId: string) => {
+  const room = Room.getRoomById(roomId);
+  return room?.members.size || 0;
+}

@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { Subscribe } from "./Subscribe";
 import { JoinRequest } from "../../interface/Participant";
+import { MediasoupError } from "./error";
 
 const host = "localhost";
 const port = 8000;
@@ -97,7 +98,7 @@ export class Connector {
                 console.log('Join request rejected');
                 this.events.onJoinRequestRejected?.();
                 this.socket.close();
-                reject('Join request rejected');
+                reject(MediasoupError.joinRequestRejected());
               }
             });
             return;
@@ -105,11 +106,11 @@ export class Connector {
         } catch (error: any) {
           if (error.type === 'exceed') {
             this.socket.close();
-            reject('This room is full!');
+            reject(MediasoupError.roomFull());
           }
           if (error.type === 'empty') {
             this.socket.close();
-            reject('This room is missing!');
+            reject(MediasoupError.roomNotFound());
           }
           return;
         }
