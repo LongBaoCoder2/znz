@@ -55,7 +55,7 @@ export interface GetProfileResponse {
     createdAt: string;
     lastLoginAt: string;
     userId: number;
-    avatar: string;
+    avatarBase64: string;
   };
   status: number;
   message: string;
@@ -72,24 +72,22 @@ export interface EditProfileResponse {
     createdAt: string;
     lastLoginAt: string;
     userId: number;
-    avatar: string;
+    avatarBase64: string;
   };
   status: number;
   message: string;
 }
 
-export interface EditProfileResponse {
+export interface EditAvatarResponse {
   data: {
-    id: number;
-    displayName: string;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    avatarUrl: string;
-    createdAt: string;
-    lastLoginAt: string;
-    userId: number;
-    avatar: string;
+  };
+  status: number;
+  message: string;
+}
+
+export interface JoinMeetingByIDResponse {
+  data: {
+
   };
   status: number;
   message: string;

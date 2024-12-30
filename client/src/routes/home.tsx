@@ -4,7 +4,7 @@ import JoinImage from "../assets/join.svg";
 import HostImage from "../assets/host.svg";
 import axios from "axios";
 import getURL from "../axios/network";
-import { GetProfileResponse, EditProfileResponse } from "../axios/interface";
+import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import { useNavigate } from "react-router";
 import { readFileSync } from "fs";
@@ -14,10 +14,10 @@ function Home() {
   const { isAuthenticated, user, accessToken, loading } = useAuth();
 
   const [avatar, setAvatar] = useState("");
-  const [fullName, setFullName] = useState("Thái Văn Mạnh");
-  const [displayName, setDisplayName] = useState("TVM");
-  const [email, setEmail] = useState("example@gmail.com");
-  const [phoneNumber, setPhoneNumber] = useState("0123456789");
+  const [fullName, setFullName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const [joinMeetingByIDModalShow, setJoinMeetingByIDModalShow] = useState(false);
   const [joinMeetingByURIModalShow, setJoinMeetingByURIModalShow] = useState(false);
@@ -36,6 +36,8 @@ function Home() {
 
   const [editAvatarModalShow, setEditAvatarModalShow] = useState(false);
   const [editAvatar, setEditAvatar] = useState("");
+
+  const [meetingID, setMeetingID] = useState("");
 
   useEffect(() => {
     const getProfile = async () => {
@@ -61,7 +63,7 @@ function Home() {
         setDisplayName(response.data.data.displayName);
         setEmail(response.data.data.email);
         setPhoneNumber(response.data.data.phoneNumber);
-        setAvatar(response.data.data.avatar);
+        setAvatar(response.data.data.avatarBase64);
       }
       catch (error) {
         console.error(error);
@@ -105,7 +107,7 @@ function Home() {
     try {
       const response = await axios.patch<EditProfileResponse>(getURL("/profile/avatar"),
         {
-          avatar: editAvatar
+          avatarBase64: editAvatar
         },
         {
           headers: {
@@ -115,7 +117,45 @@ function Home() {
       );
       if (response.status === 200) {
         setAvatar(editAvatar);
+        setEditAvatarModalShow(false);
       }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleJoinMeetingByID = async () => {
+    try {
+      const response = await axios.post<JoinMeetingByIDResponse>(getURL("/meeting/join"),
+        {
+          meetingId: meetingID
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        },
+      );
+      if (response.status === 200) {
+        console.log("join meeting success");
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleJoinMeetingByURI = async () => {
+    try {
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleHostNewMeeting = async () => {
+    try {
     }
     catch (error) {
       console.error(error);
@@ -290,13 +330,19 @@ function Home() {
               <Form.Control
                 type="text"
                 autoFocus
+                value={meetingID}
+                onChange={e => setMeetingID(e.target.value)}
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="primary">Tham gia</Button>
+            variant="primary"
+            onClick={handleJoinMeetingByID}
+          >
+            Tham gia
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -323,7 +369,12 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Tham gia</Button>
+          <Button
+            variant="primary"
+            onClick={handleJoinMeetingByURI}
+          >
+            Tham gia
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -356,7 +407,12 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Xác nhận</Button>
+          <Button
+            variant="primary"
+            onClick={handleHostNewMeeting}
+          >
+            Xác nhận
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -432,7 +488,14 @@ function Home() {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Tải ảnh đại diện lên</Form.Label>
-              <Form.Control type="file" accept="image/" onChange={(e: any) => setEditAvatar(readFileSync(e.target.files[0], 'base64'))} />
+              <Form.Control type="file" accept="image/png, image/jpg" onChange={(e: any) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const avatarBase64 = reader.result as string;
+                  setEditAvatar(avatarBase64.split(',')[1]);
+                };
+                reader.readAsDataURL(e.target.files[0]);
+              }} />
             </Form.Group>
           </Form>
         </Modal.Body>
