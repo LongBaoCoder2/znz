@@ -3,10 +3,14 @@ import { Subscribe } from "./Subscribe";
 import { JoinRequest } from "../../interface/Participant";
 import { MediasoupError } from "./error";
 
-const host = "localhost";
-const port = 8000;
+// const host = "26.138.116.36";
+// const port = 8000;
 const namespace = "sfu";
-export const string_connection = `http://${host}:${port}/${namespace}`;
+const isUsingHttps = import.meta.env.VITE_USE_HTTPS && import.meta.env.VITE_USE_HTTPS === 'true';
+let host_string = isUsingHttps ? import.meta.env.VITE_API_URL_HTTPS : import.meta.env.VITE_API_URL_HTTP;
+if (!host_string) host_string = 'http://localhost:8000';
+
+export const string_connection = `${host_string}/${namespace}`;
 
 interface ConnectorEvents {
   onWaitingApproval?: () => void;

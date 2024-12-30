@@ -14,13 +14,24 @@ import profileRoute from "./routes/profile.route";
 import { errorMiddleware, loggingMiddleware, serverErrorMiddleware, serverListenHandler } from "./middlewares/common";
 import AuthRoute from "./routes/auth.route";
 import { setupSocketServer } from "./socket";
+import { childLogger } from "./core/logger";
 
 const app: Express = express();
+let server: http.Server | https.Server;
 
-// const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
-// const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
-// const server = https.createServer({ key, cert }, app);
-const server = http.createServer(app);
+const sfuLogger = childLogger("sfu");
+
+if (config.useHttps) {
+  sfuLogger.info("Using HTTPS");
+  const key = fs.readFileSync(path.join(__dirname, config.sslKey), "utf-8");
+  const cert = fs.readFileSync(path.join(__dirname, config.sslCrt), "utf-8");
+  const passphrase = config.passphrase;
+  server = https.createServer({ key, cert, passphrase }, app);
+} else {
+  sfuLogger.info("Using HTTP");
+  server = http.createServer(app);
+}
+
 
 
 app.use(express.json());
