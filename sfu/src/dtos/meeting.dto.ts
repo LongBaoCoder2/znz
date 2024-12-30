@@ -1,10 +1,9 @@
 export interface CreateMeetingDto {
   title?: string;
-  displayId: string;
   password?: string;
 }
 
 export interface JoinMeetingDto {
-  meetingId: number;
+  displayId: string;
   password?: string;
 }

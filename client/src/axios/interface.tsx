@@ -87,7 +87,14 @@ export interface EditAvatarResponse {
 
 export interface JoinMeetingByIDResponse {
   data: {
-
+    id: number;
+    title: string;
+    displayId: string;
+    uri: string;
+    host: number;
+    createdAt: Date;
+    status: string;
+    hasCustomPassword: boolean;
   };
   status: number;
   message: string;
