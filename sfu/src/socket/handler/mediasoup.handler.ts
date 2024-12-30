@@ -47,8 +47,8 @@ const setupMediasoupHandler = (sfuListener: any) => {
         role: 'participant',
         status: 'pending',
         joinedAt: new Date(),
-        isAudioMuted: false,
-        isVideoMuted: false
+        isAudioMuted: true,
+        isVideoMuted: true
       };
 
       socket.join(getRoomId());
@@ -80,12 +80,16 @@ const setupMediasoupHandler = (sfuListener: any) => {
           socket.emit('member:joined', {
             username: newMember?.username,
             socketId: data.socketId,
-            joinedAt: newMember?.joinedAt
+            joinedAt: newMember?.joinedAt,
+            isAudioMuted: newMember?.isAudioMuted,
+            isVideoMuted: newMember?.isVideoMuted
           })
           socket.to(roomId).except(data.socketId).emit('member:joined', {
             username: newMember?.username,
             socketId: data.socketId,
-            joinedAt: newMember?.joinedAt
+            joinedAt: newMember?.joinedAt,
+            isAudioMuted: newMember?.isAudioMuted,
+            isVideoMuted: newMember?.isVideoMuted
           });
           sfuLogger.info(`member:joined successfully: ${newMember?.username} joined the room`);
         }

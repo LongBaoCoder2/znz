@@ -14,6 +14,7 @@ export const MessageModal = ({ type, message, show, onClose }: any) => {
     },
   };
 
+
   return (
     <Toast
       show={show}
@@ -34,14 +35,14 @@ export const MessageModal = ({ type, message, show, onClose }: any) => {
 };
 
 
-const MessageModalContainer = ({type, message, showMessageModel, setShowMessageModel}: any) => {
+const MessageModalContainer = ({type, message, isVisible, hideMessage}: any) => {
   return (
     <ToastContainer position="top-start" className="p-3">
         <MessageModal
           type={type}
           message={message}
-          show={showMessageModel}
-          onClose={() => setShowMessageModel(false)}
+          show={isVisible}
+          onClose={hideMessage}
         />
       </ToastContainer>
   );
