@@ -21,11 +21,11 @@ import WaitingApprovalModal from "../components/WaitingApprovalModal";
 
 // Error handle - notify modal when failed
 import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
-import MessageModalContainer from "../components/MessageModal";
 // Chat Service
 import { ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAuth } from "../store/AuthContext";
+import { useNotify } from "../store/NotifyContext";
 
 export let connector: Connector;
 let publish: Publish | null = null;
@@ -102,8 +102,9 @@ function Meeting() {
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [micOn, setMicOn] = useState(true);
-  const [cameraOn, setCameraOn] = useState(true);
+  
+  const [micOn, setMicOn] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
   // @ts-ignore
   const [joinStatus, setJoinStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
@@ -113,9 +114,7 @@ function Meeting() {
 
   // A modal to show messages: error or success
   // Example: new member joined or error when setting device
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [modalType, setModalType] = useState<'error' | 'success'>('success');
-  const [modalMessage, setModalMessage] = useState('');
+  const { showMessage } = useNotify();
 
 
   const [showChat, setShowChat] = useState(false);
@@ -136,9 +135,7 @@ function Meeting() {
   };
 
   const notifyNewParticipant = (username: string) => {
-    setModalMessage(`${username} has joined the room`);
-    setModalType('success');
-    setShowMessageModal(true);
+    showMessage(`${username} has joined the room`, 'success');
   };
 
   useEffect(() => {
@@ -146,28 +143,49 @@ function Meeting() {
   }, [loading]);
 
   // Handler functions
-  const handleMicToggle = () => {
+  const handleMicToggle = async () => {
     if (micOn) {
       publish?.pauseProducer("audio");
       setMicOn(false);
       editVideoAudio('audioOff');
     } else {
-      publish?.resumeProducer("audio");
-      setMicOn(true);
-      editVideoAudio('audioOn');
+      try {
+        if (!publish?.isPublishingAudio) {
+          await publish?.startPublishingAudio();
+        }
+        else {
+          publish?.resumeProducer("audio");
+        }
+        console.log(localVideoRef.current);
+        setMicOn(true);
+        editVideoAudio('audioOn');
+      } catch (error) {
+        showMessage(`Error starting audio: ${error}`, 'error');
+        setMicOn(false);
+      }
     }
   };
 
-  const handleCameraToggle = () => {
+  const handleCameraToggle = async () => {
     if (cameraOn) {
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
     } else {
-      publish?.resumeProducer("video");
-      console.log(localVideoRef.current);
-      setCameraOn(true);
-      editVideoAudio('videoOn');
+      try {
+        if (!publish?.isPublishingVideo) {
+          await publish?.startPublishingVideo();
+        }
+        else {
+          publish?.resumeProducer("video");
+        }
+        console.log(localVideoRef.current);
+        setCameraOn(true);
+        editVideoAudio('videoOn');
+      } catch (error) {
+        showMessage(`Error starting video: ${error}`, 'error');
+        setCameraOn(false);
+      }
     }
   };
   const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
@@ -219,6 +237,8 @@ function Meeting() {
               username: string,
               socketId: string,
               joinedAt: Date;
+              isAudioMuted: boolean;
+              isVideoMuted: boolean;
             }) => {
               // Show modal for notifying the user joins 
               console.log(`New member joined: ${member.username}`);
@@ -228,10 +248,10 @@ function Meeting() {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
             },
             onNewProducer: () => {
-              setParticipants(subscribe.participants);
+              setParticipants([...subscribe.participants]);
             },
             onSetStateParticipants: () => {
-              setParticipants(subscribe.participants);
+              setParticipants([...subscribe.participants]);
             },
           });
 
@@ -252,18 +272,14 @@ function Meeting() {
               case MediasoupErrorKind.ROOM_NOT_FOUND:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
 
                 navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
 
                 navigate("/");
                 break;
@@ -294,7 +310,15 @@ function Meeting() {
           setSubReady(true);
 
           publish = new Publish(device, connector, localVideoRef);
-          await publish.publish(true, true)
+          await publish.enumerateDevices();
+          // await publish.publish(cameraOn, micOn)
+          if (cameraOn) {
+            await publish.startPublishingVideo();
+          } 
+
+          if (micOn) {
+            await publish.startPublishingAudio();
+          }
         } catch (error: any) {
 
           // Error handle - notify modal when failed
@@ -303,9 +327,7 @@ function Meeting() {
               case MediasoupErrorKind.DeviceLoadFailed:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
                 break;
               case MediasoupErrorKind.RtpCapabilitiesFailed:
                 // Handle RTP capabilities failure
@@ -386,7 +408,6 @@ function Meeting() {
       setCameraOn(false);
       setMicOn(false);
       // Close modals
-      setShowMessageModal(false);
       setShowWaitingModal(false);
       setShowRequestsModal(false);
       // Clear local video element
@@ -571,13 +592,7 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      {/* Message Modal - (should place in App.tsx)  */}
-      <MessageModalContainer
-        type={modalType}
-        message={modalMessage}
-        showMessageModel={showMessageModal}
-        setShowMessageModal={setShowMessageModal}
-      />
+      
     </Container >
   );
 };

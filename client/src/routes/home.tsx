@@ -11,7 +11,7 @@ import { readFileSync } from "fs";
 
 function Home() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, accessToken, loading } = useAuth();
+  const { isAuthenticated, user, accessToken, loading, logout } = useAuth();
 
   const [avatar, setAvatar] = useState("");
   const [fullName, setFullName] = useState("");
@@ -167,6 +167,15 @@ function Home() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/signin');
+    } catch (error) {
+
+    }
+  }
+
   if (loading) {
     return (
       <Container className='d-flex justify-content-center align-items-center' style={{ minHeight: "100vh" }}>
@@ -188,11 +197,23 @@ function Home() {
         <h1 className='text-primary'>ZNZ</h1>
       </Row>
 
-      <Row className='pt-3'>
-        <Col className='col-2 d-flex flex-column'>
-          <Button>Trang chủ</Button>
-          <Button variant='light'>Đổi mật khẩu</Button>
-          <Button variant='light'>Đăng xuất</Button>
+
+      <Row className="pt-3">
+        <Col className="col-2 d-flex flex-column">
+          <Button>
+            Trang chủ
+          </Button>
+          <Button
+            variant="light"
+          >
+            Đổi mật khẩu
+          </Button>
+          <Button
+            variant="light"
+            onClick={handleLogout}
+          >
+            Đăng xuất
+          </Button>
         </Col>
 
         <Col className='d-flex flex-row justify-content-evenly'>

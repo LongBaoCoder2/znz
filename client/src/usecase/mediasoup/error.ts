@@ -56,6 +56,14 @@ export class MediasoupError extends Error {
     );
   }
 
+  static deviceNotSupported(devices: string[]): MediasoupError {
+    return new MediasoupError(
+      MediasoupErrorKind.DeviceNotSupported, 
+      'Device not supported',
+      { unsupportedDevices: devices }
+    );
+  }
+
   static connectionFailed(error: unknown): MediasoupError {
     return new MediasoupError(
       MediasoupErrorKind.ConnectionFailed,
