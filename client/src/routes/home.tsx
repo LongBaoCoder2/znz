@@ -24,7 +24,6 @@ function Home() {
   const [passwordModalShow, setPasswordModalShow] = useState(false);
   const [hostMeetingModalShow, setHostMeetingModalShow] = useState(false);
 
-
   const [editProfileModalShow, setEditProfileModalShow] = useState(false);
   const [editFullName, setEditFullName] = useState("Thái Văn Mạnh");
   const [editDisplayName, setEditDisplayName] = useState("TVM");
@@ -40,7 +39,6 @@ function Home() {
   const [meetingID, setMeetingID] = useState("");
   const [meetingPasswords, setMeetingPasswords] = useState("");
 
-
   const [requiredPasswords, setRequiredPasswords] = useState(false);
 
   useEffect(() => {
@@ -48,28 +46,25 @@ function Home() {
       if (loading) return;
 
       if (!isAuthenticated || !user) {
-        navigate('/signin');
+        navigate("/signin");
         return;
       }
 
       console.log("user: ", user);
 
       try {
-        const response = await axios.get<GetProfileResponse>(getURL("/profile"),
-          {
-            headers: {
-              "Authorization": `Bearer ${accessToken}`,
-            }
+        const response = await axios.get<GetProfileResponse>(getURL("/profile"), {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
           }
-        );
+        });
         console.log(response);
         setFullName(response.data.data.fullName);
         setDisplayName(response.data.data.displayName);
         setEmail(response.data.data.email);
         setPhoneNumber(response.data.data.phoneNumber);
         setAvatar(response.data.data.avatarBase64);
-      }
-      catch (error) {
+      } catch (error) {
         console.error(error);
       }
     };
@@ -78,7 +73,8 @@ function Home() {
 
   const handleEditProfile = async () => {
     try {
-      const response = await axios.patch<EditProfileResponse>(getURL("/profile"),
+      const response = await axios.patch<EditProfileResponse>(
+        getURL("/profile"),
         {
           fullName: editFullName,
           displayName: editDisplayName,
@@ -87,9 +83,9 @@ function Home() {
         },
         {
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`
           }
-        },
+        }
       );
       console.log("edit profile response: ");
       console.log(response);
@@ -101,82 +97,83 @@ function Home() {
         setPhoneNumber(editPhoneNumber);
       }
       setEditProfileModalShow(false);
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
   };
 
   const handleEditAvatar = async () => {
     try {
-      const response = await axios.patch<EditProfileResponse>(getURL("/profile/avatar"),
+      const response = await axios.patch<EditProfileResponse>(
+        getURL("/profile/avatar"),
         {
           avatarBase64: editAvatar
         },
         {
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`
           }
-        },
+        }
       );
       if (response.status === 200) {
         setAvatar(editAvatar);
         setEditAvatarModalShow(false);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
   };
 
   const handleJoinMeetingByID = async () => {
     try {
-      const response = await axios.post<JoinMeetingByIDResponse>(getURL("/meeting/join"),
+      const response = await axios.post<JoinMeetingByIDResponse>(
+        getURL("/meeting/join"),
         {
           displayId: meetingID,
           password: meetingPasswords
         },
         {
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`
           }
-        },
+        }
       );
       if (response.status === 200) {
         console.log("join meeting success");
         console.log(response);
         navigate(`/meeting/${response.data.data.uri}`);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(meetingID);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        // console.error("Unauthorized access (401):", error.message);
+        setRequiredPasswords(true);
+      }
       console.error(error);
     }
   };
 
   const handleJoinMeetingByURI = async () => {
     try {
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
   };
 
   const handleHostNewMeeting = async () => {
     try {
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
   };
 
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+      <Container className='d-flex justify-content-center align-items-center' style={{ minHeight: "100vh" }}>
         <Row>
-          <Col className="text-center">
-            <Spinner animation="border" role="status" variant="primary">
-              <span className="visually-hidden">Loading...</span>
+          <Col className='text-center'>
+            <Spinner animation='border' role='status' variant='primary'>
+              <span className='visually-hidden'>Loading...</span>
             </Spinner>
             {/* <p className="mt-2">Loading your profile...</p> */}
           </Col>
@@ -301,14 +298,18 @@ function Home() {
           <Form>
             <Form.Group>
               <Form.Label>Nhập ID cuộc họp</Form.Label>
-              <Form.Control type='text' autoFocus value={meetingID} onChange={(e) => setMeetingID(e.target.value)} />
-              <Form.Label>Nhập Password</Form.Label>
-              <Form.Control
-                type='text'
-                autoFocus
-                value={meetingPasswords}
-                onChange={(e) => setMeetingPasswords(e.target.value)}
-              />
+              <Form.Control type='text' style={{ marginBottom: 15}} autoFocus value={meetingID} onChange={(e) => setMeetingID(e.target.value)} />
+              {requiredPasswords && (
+                <>
+                  <Form.Label>Nhập Password</Form.Label>
+                  <Form.Control
+                    type='text'
+                    autoFocus
+                    value={meetingPasswords}
+                    onChange={(e) => setMeetingPasswords(e.target.value)}
+                  />
+                </>
+              )}
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -451,6 +452,6 @@ function Home() {
       </Modal>
     </Container>
   );
-};
+}
 
 export default Home;
