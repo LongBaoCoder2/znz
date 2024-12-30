@@ -99,12 +99,6 @@ function SignIn() {
     if (loading) return;
   }, [loading]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/home");
-    }
-  }, [isAuthenticated]);
-
   if (loading) {
     return <Loading />
   }
