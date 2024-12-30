@@ -103,8 +103,8 @@ function Meeting() {
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
   
-  const [micOn, setMicOn] = useState(true);
-  const [cameraOn, setCameraOn] = useState(true);
+  const [micOn, setMicOn] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
   // @ts-ignore
   const [joinStatus, setJoinStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
@@ -143,28 +143,49 @@ function Meeting() {
   }, [loading]);
 
   // Handler functions
-  const handleMicToggle = () => {
+  const handleMicToggle = async () => {
     if (micOn) {
       publish?.pauseProducer("audio");
       setMicOn(false);
       editVideoAudio('audioOff');
     } else {
-      publish?.resumeProducer("audio");
-      setMicOn(true);
-      editVideoAudio('audioOn');
+      try {
+        if (!publish?.isPublishingAudio) {
+          await publish?.startPublishingAudio();
+        }
+        else {
+          publish?.resumeProducer("audio");
+        }
+        console.log(localVideoRef.current);
+        setMicOn(true);
+        editVideoAudio('audioOn');
+      } catch (error) {
+        showMessage(`Error starting audio: ${error}`, 'error');
+        setMicOn(false);
+      }
     }
   };
 
-  const handleCameraToggle = () => {
+  const handleCameraToggle = async () => {
     if (cameraOn) {
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
     } else {
-      publish?.resumeProducer("video");
-      console.log(localVideoRef.current);
-      setCameraOn(true);
-      editVideoAudio('videoOn');
+      try {
+        if (!publish?.isPublishingVideo) {
+          await publish?.startPublishingVideo();
+        }
+        else {
+          publish?.resumeProducer("video");
+        }
+        console.log(localVideoRef.current);
+        setCameraOn(true);
+        editVideoAudio('videoOn');
+      } catch (error) {
+        showMessage(`Error starting video: ${error}`, 'error');
+        setCameraOn(false);
+      }
     }
   };
   const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
@@ -287,7 +308,15 @@ function Meeting() {
           setSubReady(true);
 
           publish = new Publish(device, connector, localVideoRef);
-          await publish.publish(true, true)
+          await publish.enumerateDevices();
+          // await publish.publish(cameraOn, micOn)
+          if (cameraOn) {
+            await publish.startPublishingVideo();
+          } 
+
+          if (micOn) {
+            await publish.startPublishingAudio();
+          }
         } catch (error: any) {
 
           // Error handle - notify modal when failed

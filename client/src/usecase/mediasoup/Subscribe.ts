@@ -2,6 +2,14 @@ import { Device, types as mediaSoupTypes } from "mediasoup-client";
 import { Connector } from "./Connector";
 import { Participant } from "../../interface/Participant";
 
+interface AddConsumeUser {
+  socketId: string;
+  username: string;
+  isAudioMuted: boolean;
+  isVideoMuted: boolean;
+}
+
+
 export class Subscribe {
   public consumerTransport!: mediaSoupTypes.Transport;
   public videoConsumers = new Map<string, mediaSoupTypes.Consumer>();
@@ -134,11 +142,23 @@ export class Subscribe {
     const Members = producers.Members;
 
     videoIds.forEach(async (vid: any) => {
-        await this.consumeAdd(this.consumerTransport, vid, Members[vid]?.username, 'video');
+        const addConsumerUser : AddConsumeUser = {
+            socketId: vid,
+            username: Members[vid]?.username,
+            isAudioMuted: Members[vid]?.isAudioMuted,
+            isVideoMuted: Members[vid]?.isVideoMuted
+        }
+        await this.consumeAdd(this.consumerTransport, vid, addConsumerUser, 'video');
     });
 
     audioIds.forEach(async (aid: any) => {
-        await this.consumeAdd(this.consumerTransport, aid, Members[aid]?.username, 'audio');
+        const addConsumerUser : AddConsumeUser = {
+            socketId: aid,
+            username: Members[aid]?.username,
+            isAudioMuted: Members[aid]?.isAudioMuted,
+            isVideoMuted: Members[aid]?.isVideoMuted
+        }
+        await this.consumeAdd(this.consumerTransport, aid, addConsumerUser, 'audio');
     });
     Object.values(Members).forEach(async (member: any) => {
       if (member.socketId !== this.connector.socketId) {
@@ -184,20 +204,24 @@ export class Subscribe {
     return this.participants;
   }
 
-  async handleNewMember(member: { username: string, socketId: string, joinedAt: Date }) {
+  async handleNewMember(member: { username: string, 
+                                  socketId: string, 
+                                  joinedAt: Date, 
+                                  isAudioMuted: boolean, 
+                                  isVideoMuted: boolean }) {
     console.log('Handling new member join:', member.username, member.socketId);
 
     const participant : Participant = { username: member.username, 
                                         socketId: member.socketId, 
-                                        videoOn: true, 
-                                        audioOn: true,
+                                        videoOn: !member.isVideoMuted, 
+                                        audioOn: !member.isAudioMuted,
                                         stream: new MediaStream()
                                       };
     this.addMember(participant);
     console.log('New member join handled successfully:', member.username);
   }
 
-  async consumeAdd(consumerTransport: mediaSoupTypes.Transport, socketId: any, userName: any, tkind: string) {
+  async consumeAdd(consumerTransport: mediaSoupTypes.Transport, socketId: any, user: AddConsumeUser, tkind: string) {
       const { rtpCapabilities } = this.device;
       console.log("rtpCapabilities: ", rtpCapabilities);
       const data = await this.connector.sendRequest('consumeAdd', { rtpCapabilities: rtpCapabilities, producerId: socketId, kind: tkind })
@@ -223,7 +247,7 @@ export class Subscribe {
       // this.addSubVideo(producerSocketId, consumer.track, kind, userName);
       // this.addConsumer(producerSocketId, consumer, kind);
 
-      this.addSubVideo(socketId, consumer.track, kind, userName);
+      this.addSubVideo(socketId, consumer.track, kind, user);
       this.addConsumer(socketId, consumer, kind);
 
       console.log("=============== addSubVideo =====================");
@@ -287,7 +311,7 @@ export class Subscribe {
   }
 
     // @ts-ignore
-    async addSubVideo(socketId: any, track: any, kind: any, userName: string) {
+    async addSubVideo(socketId: any, track: any, kind: any, user: AddConsumeUser) {
         console.log("=============== addSubVideo =====================");
         
         let isExist = 0;
@@ -315,10 +339,10 @@ export class Subscribe {
                 this.participants = [...this.participants, {
                     socketId: socketId,
                     // audioProducerId: producerSocketId,
-                    username: userName,
+                    username: user.username,
                     stream: newMedia,
-                    audioOn: true,
-                    videoOn: true,
+                    audioOn: !user.isAudioMuted,
+                    videoOn: !user.isVideoMuted,
                 }]
             // } else {
             //     this.participants = [...this.participants, {
