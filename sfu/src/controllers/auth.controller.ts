@@ -5,6 +5,8 @@ import { LoginUserDto } from "../dtos/loginUsers.dto";
 import { User } from "../interfaces/users.interface";
 import { RequestWithUser } from "../interfaces/auth.interface";
 import { HttpException } from "@sfu/exceptions/HttpException";
+import { UserChangePasswordDto } from "@sfu/dtos/user.dto";
+
 class AuthController {
   public authService = new AuthService();
 
@@ -82,6 +84,31 @@ class AuthController {
       res.status(200).json({ accessToken: newAccessToken, message: "Refresh token thành công" });
     } catch (error) {
       next(error);
+    }
+  };
+
+  public changePassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as RequestWithUser).user.id;
+
+      const userChangePasswordDto : UserChangePasswordDto = req.body;
+
+      this.authService.changePassword(userId, userChangePasswordDto);
+
+      res.status(200).json({ 
+        message: "Update password successfully!" 
+      });
+    } catch (error: any) {
+      if (error instanceof HttpException) {
+        res.status(error.status).json({ 
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Error when updating password!",
+        });
+      }
+      
     }
   };
 }
