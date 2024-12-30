@@ -51,7 +51,7 @@ const profileController = {
         const profileWithAvatar = {
           ...profile,
           avatar: fileContent,
-        }
+        };
 
         res.status(200).json({
           message: "Profile retrieved successfully.",
@@ -142,7 +142,7 @@ const profileController = {
 
       const newData = {
         displayName: req.body.displayName,
-        fullname: req.body.fullName,
+        fullName: req.body.fullName,
         email: req.body.email,
         phoneNumber: req.body.phoneNumber,
       };
