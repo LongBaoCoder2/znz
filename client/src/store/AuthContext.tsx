@@ -12,7 +12,7 @@ interface AuthContextType {
   refreshToken: string | null;
   loading: boolean;
   login: (response: SignInResponse) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,6 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+
+  const callApiLogout = async () => {
+    const response = await axios.post<SignInResponse>(getURL("/auth/logout"), {}, {
+      headers: {
+        "Authorization": `Bearer ${accessToken}`
+      },
+    });
+    return response;
+  }
+
   const checkUser = async () => {
     const existingAccessToken = Cookies.get('accessToken');
     const existingRefreshToken = Cookies.get('refreshToken');
@@ -74,14 +84,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.set('refreshToken', response.refreshToken, { expires: 1 });
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setAccessToken(null);
     setRefreshToken(null);
     setIsAuthenticated(false);
-    
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+
+    try {
+      const response = await callApiLogout();
+      console.log(response);
+
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (

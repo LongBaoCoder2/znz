@@ -6,10 +6,11 @@ import axios from "axios";
 import getURL from "../axios/network";
 import { SignInResponse, SignUpResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
+import Loading from "../components/Loading";
 
 function SignIn() {
   let navigate = useNavigate();
-  const { login } = useAuth();
+  const { loading, isAuthenticated, login } = useAuth();
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -93,6 +94,20 @@ function SignIn() {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (loading) return;
+  }, [loading]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated]);
+
+  if (loading) {
+    return <Loading />
+  }
 
   return (
     <Container fluid className="vw-100">
