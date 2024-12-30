@@ -4,4 +4,5 @@ export interface ProfileDto {
     email: string;
     phoneNumber: string;
     avatarUrl: string;
+    avatarBase64: string;
 }

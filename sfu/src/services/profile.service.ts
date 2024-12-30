@@ -1,5 +1,5 @@
 import { ProfileDto } from "@sfu/dtos/profile.dto";
-import { createProfile, updateAvatarUrlByUserId, getProfileByUserId, updateLastLogin, updateProfile } from "@sfu/data-access/profile";
+import { createProfile, updateAvatarUrlByUserId, updateAvatarBase64ByUserId, getProfileByUserId, updateLastLogin, updateProfile } from "@sfu/data-access/profile";
 import { profile } from "@sfu/db/schemas/profile.schema";
 import { childLogger } from "@sfu/core/logger";
 
@@ -7,10 +7,10 @@ const sfuLogger = childLogger("sfu");
 class ProfileService {
     async createProfile(userId: number, createProfileDto: ProfileDto) {
         try {
-            const { displayName, fullName, email, phoneNumber, avatarUrl } = createProfileDto;
+            const { displayName, fullName, email, phoneNumber, avatarUrl, avatarBase64 } = createProfileDto;
 
             sfuLogger.info(`createProfile------------: ${userId}, ${displayName}, ${fullName}, ${email}, ${phoneNumber}`);
-            const profile = await createProfile(userId, displayName, fullName, email, phoneNumber, avatarUrl);
+            const profile = await createProfile(userId, displayName, fullName, email, phoneNumber, avatarUrl, avatarBase64);
 
             return profile;
         } catch (error: any) {
@@ -33,6 +33,15 @@ class ProfileService {
     async updateAvatarUrlByUserId(userId: number, newAvatarUrl: string) {
         try {
             await updateAvatarUrlByUserId(userId, newAvatarUrl);
+            return;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async updateAvatarBase64ByUserId(userId: number, newAvatarBase64: string) {
+        try {
+            await updateAvatarBase64ByUserId(userId, newAvatarBase64);
             return;
         } catch (error: any) {
             throw new Error(error.message);
