@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Connector, Publish, Subscribe, MediasoupDevice } from "../usecase/mediasoup";
 import { Device } from "mediasoup-client";
 import { JoinRequest, Participant } from "../interface/Participant";
-import { MicFill, MicMuteFill, CameraVideoFill, CameraVideoOffFill, DisplayFill, PersonFill } from "react-bootstrap-icons";
+import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots, Chat } from "react-bootstrap-icons";
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
@@ -120,7 +120,7 @@ function Meeting() {
   const [showChat, setShowChat] = useState(false);
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
-  
+
 
   const initializeDevice = async () => {
     try {
@@ -139,7 +139,7 @@ function Meeting() {
   };
 
   useEffect(() => {
-    if (loading) return; 
+    if (loading) return;
   }, [loading]);
 
   // Handler functions
@@ -230,7 +230,7 @@ function Meeting() {
             onJoinRequestRejected: () => {
               setJoinStatus('rejected');
               setShowWaitingModal(false);
-              navigate("/");
+              // navigate("/");
               // Handle rejection (e.g., redirect to home)
             },
             onMemberJoined: (member: {
@@ -274,14 +274,14 @@ function Meeting() {
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                navigate("/");
+                //navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                navigate("/");
+                //navigate("/");
                 break;
               // ... handle other cases
             }
@@ -319,6 +319,7 @@ function Meeting() {
           if (micOn) {
             await publish.startPublishingAudio();
           }
+
         } catch (error: any) {
 
           // Error handle - notify modal when failed
@@ -448,14 +449,14 @@ function Meeting() {
 
 
   return (
-    <Container fluid className="vh-100 d-flex flex-column">
+    <Container fluid className="vh-100 d-flex flex-column" style={{ backgroundColor: "#1C1F2E" }}>
       <Row style={{ flex: 1 }} className="align-items-center ps-3">
         <h4>
           {URI} | {title}
         </h4>
       </Row>
 
-      <Row style={{ flex: 10 }}>
+      <Row style={{ flex: 10 }} className="p-3">
         <Col className="col-9">
           <MyCard
             videoRef={localVideoRef}
@@ -475,7 +476,7 @@ function Meeting() {
         </Col>
       </Row>
 
-      <Row style={{ flex: 1 }} className="align-items-center bg-light">
+      <Row style={{ flex: 1, backgroundColor: "#161929" }} className="align-items-center pt-3 pb-3" >
         <Col className="col-2 offset-1">
           <OverlayTrigger trigger="click" placement="top" overlay={
             <Popover>
@@ -486,30 +487,28 @@ function Meeting() {
               </Popover.Body>
             </Popover>
           }>
-            <Image
-              src={addParticipantImage}
-              style={{ width: "75%", cursor: "pointer" }}
-            />
+            <Button
+              variant="primary"
+              className="d-flex justify-content-around align-items-center"
+              style={{ height: "50px", width: "80%", cursor: "pointer", backgroundColor: "#1E2757", borderRadius: "50px" }}
+            >
+              <span className="fw-medium" style={{ color: "#1A71FF" }}>Add Participant</span>
+              <PersonFillAdd size={25} style={{ color: "#1A71FF" }} />
+            </Button>
           </OverlayTrigger>
         </Col>
-        <Col className="col-2 offset-2 d-flex justify-content-around">
-          <Image
-            src={micOn ? microphoneOnImage : microphoneOffImage}
-            style={{ width: "20%", cursor: "pointer" }}
-            onClick={handleMicToggle}
-          />
-          <Image
-            src={cameraOn ? cameraOnImage : cameraOffImage}
-            style={{ width: "20%", cursor: "pointer" }}
-            onClick={handleCameraToggle}
-          />
-          <Image
-            src={screenSharing ? shareScreenOnImage : shareScreenOffImage}
-            style={{ width: "20%", cursor: "pointer" }}
-            onClick={handleScreenSharingToggle}
-          />
+        <Col className="col-2 offset-1 d-flex justify-content-around">
+          <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: micOn ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleMicToggle}>
+            {micOn ? <MicFill size={20} /> : <MicMuteFill size={20} />}
+          </Button>
+          <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: cameraOn ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleCameraToggle}>
+            {cameraOn ? <CameraVideo size={20} /> : <CameraVideoOff size={20} />}
+          </Button>
+          <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: screenSharing ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleScreenSharingToggle}>
+            {screenSharing ? <Display size={20} /> : <Cast size={20} />}
+          </Button>
         </Col>
-        <Col className="col-1">
+        <Col className="col-2 d-flex ps-5">
           {/* <Image
             src={endCallImage}
             className="w-100"
@@ -517,25 +516,28 @@ function Meeting() {
             onClick={handleEndCallClick}
           /> */}
 
-          <Button disabled={isDisconnecting} onClick={handleEndCallClick}>
+          <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
           </Button>
         </Col>
-        <Col className="col-2 offset-2 d-flex justify-content-around">
-          <Image
-            src={viewParticipantsImage}
-            style={{ width: "60%", cursor: "pointer" }}
+        <Col className="col-3 offset-1 d-flex justify-content-evenly">
+          <Button
+            variant="primary"
+            className="d-flex justify-content-around align-items-center"
+            style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#1E2757", borderRadius: "50px" }}
             onClick={handleViewParticipantsClick}
-          />
-          <Image
-            src={viewMessagesImage}
-            style={{ width: "20%", cursor: "pointer" }}
-            onClick={() => setShowChat(!showChat)}
-          />
+          >
+            <span className="fw-medium" style={{ color: "#1A71FF" }}>View Participants</span>
+            <PeopleFill size={25} style={{ color: "#1A71FF" }} />
+          </Button>
+          <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: "#1E2757", display: "flex", justifyContent: "center", alignItems: "center" }}
+            onClick={() => setViewMessagesShow(true)}>
+            <ChatDots size={20} style={{ color: "#1A71FF" }} />
+          </Button>
         </Col>
       </Row>
 
-      
+
       {/* Chat panel */}
       <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
