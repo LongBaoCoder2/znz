@@ -43,10 +43,40 @@ export async function updateUserById(userId: number, updatedFields: Partial<type
   await database.update(user).set(updatedFields).where(eq(user.id, userId));
 }
 
+// Update a user's password
+export async function updateUserPasswordById(userId: number, plainTextPassword: string) {
+  const salt = crypto.randomBytes(128).toString("base64");
+  const hash = await hashPassword(plainTextPassword, salt);
+
+  const newPassword = {
+    passwordHash: hash,
+    pwdSalt: salt
+  }
+
+  await database.update(user).set(newPassword).where(eq(user.id, userId));
+}
+
 
 // Verify a user's name and password
 export async function verifyUserNamePassword(username: string, plainTextPassword: string) {
   const existingUser = await getUserByUsername(username);
+
+  if (!existingUser) {
+    return false;
+  }
+
+  const { passwordHash, pwdSalt } = existingUser;
+
+  if (!passwordHash || !pwdSalt) {
+    return false;
+  }
+
+  const hash = await hashPassword(plainTextPassword, pwdSalt);
+  return passwordHash === hash;
+}
+
+export async function verifyUserPassword(userId: number, plainTextPassword: string) {
+  const existingUser = await getUserById(userId);
 
   if (!existingUser) {
     return false;

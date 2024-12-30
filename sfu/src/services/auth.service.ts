@@ -4,9 +4,10 @@ import { LoginUserDto } from "../dtos/loginUsers.dto";
 import { User } from "../interfaces/users.interface";
 import { HttpException } from "../exceptions/HttpException";
 import { DataStoredInToken, TokenData } from "../interfaces/auth.interface";
-import { createUser, getUserByUsername, verifyUserNamePassword } from "@sfu/data-access/user";
+import { createUser, getUserByUsername, verifyUserNamePassword, verifyUserPassword, updateUserPasswordById } from "@sfu/data-access/user";
 import jwt from "jsonwebtoken";
 import { childLogger } from "@sfu/core/logger";
+import { UserChangePasswordDto } from "@sfu/dtos/user.dto";
 
 const sfuLogger = childLogger("sfu");
 class AuthService {
@@ -96,6 +97,23 @@ class AuthService {
       return accessTokenData.token;
     } catch (error) {
       throw new HttpException(403, "Refresh token không hợp lệ");
+    }
+  }
+
+  public async changePassword(userId: number, userChangePasswordDto: UserChangePasswordDto) {
+    try {
+      const { plainTextOldPassword, plainTextNewPassword } = userChangePasswordDto;
+      const isCorrectPassword = await verifyUserPassword(userId, plainTextOldPassword);
+
+      if (!isCorrectPassword) {
+        throw new HttpException(409, "Incorrect old password!");
+      }
+
+      await updateUserPasswordById(userId, plainTextNewPassword);
+      return;
+
+    } catch (error: any) {
+      throw error;
     }
   }
 }
