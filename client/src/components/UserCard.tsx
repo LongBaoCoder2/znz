@@ -7,10 +7,14 @@ const UserCard = ({ participant }: { participant: Participant }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && participant.stream) {
-      videoRef.current.srcObject = participant.stream;
+    if (videoRef.current) {
+      if (participant.videoOn && participant.stream) {
+        videoRef.current.srcObject = participant.stream;
+      } else {
+        videoRef.current.srcObject = null;
+      }
     }
-  }, [participant.stream]);
+  }, [participant.stream, participant.videoOn]);
 
   return (
     <Card className="mb-3 position-relative" style={{ 
