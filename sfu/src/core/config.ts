@@ -25,8 +25,15 @@ const getLocalIp = () => {
 export const config = {
   listenIp: '0.0.0.0',
   listenPort: process.env.PORT || 8000,
+  useHttps: (process.env.USE_HTTPS && process.env.USE_HTTPS === 'true') || false,
+  passphrase: process.env.PASSPHRASE,
   sslCrt: '../ssl/localhost.crt',
   sslKey: '../ssl/localhost.key',
+  // sslCrt: '../ssl/cert.pem',
+  // sslKey: '../ssl/key.pem',
+  environment: process.env.ENVIRONMENT || "dev",
+  secretKey: process.env.SECRET_KEY || "secret",
+  refreshSecretKey: process.env.REFRESH_SECRET_KEY || "RefreshSecret",
   databaseString: process.env.DATABASE_URL,
   numWorkers: Object.keys(os.cpus()).length,
 

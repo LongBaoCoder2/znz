@@ -21,7 +21,6 @@ const profileController = {
       const profileService = new ProfileService();
       const newProfile = await profileService.createProfile(userId, createProfileDto);
 
-      sfuLogger.info("newProfile------------: ", newProfile);
 
       res.status(201).json({
         message: "Profile created successfully.",
@@ -42,13 +41,11 @@ const profileController = {
   getProfileByUserIdHandler: async (req: Request, res: Response) => {
     try {
       // @ts-ignore
-      sfuLogger.info("getProfileByUserIdHandler------------: ", req.user);
 
       const userId = (req as RequestWithUser).user.id;
       const profileService = new ProfileService();
       const profile = await profileService.getProfileByUserId(userId);
 
-      sfuLogger.info("Profile------------: ", profile);
 
       // if (profile && profile.avatarUrl) {
       //   const fileContent = readFileSync(profile.avatarUrl, 'base64');

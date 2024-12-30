@@ -3,13 +3,10 @@ import { createProfile, updateAvatarUrlByUserId, updateAvatarBase64ByUserId, get
 import { profile } from "@sfu/db/schemas/profile.schema";
 import { childLogger } from "@sfu/core/logger";
 
-const sfuLogger = childLogger("sfu");
 class ProfileService {
     async createProfile(userId: number, createProfileDto: ProfileDto) {
         try {
             const { displayName, fullName, email, phoneNumber, avatarUrl, avatarBase64 } = createProfileDto;
-
-            sfuLogger.info(`createProfile------------: ${userId}, ${displayName}, ${fullName}, ${email}, ${phoneNumber}`);
             const profile = await createProfile(userId, displayName, fullName, email, phoneNumber, avatarUrl, avatarBase64);
 
             return profile;
@@ -20,9 +17,7 @@ class ProfileService {
 
     async getProfileByUserId(userId: number) {
         try {
-            sfuLogger.info(`getProfileByUserId------------: ${userId}`);
             const profile = await getProfileByUserId(userId);
-            sfuLogger.info(`getProfileByUserId profile------------: ${profile}`);
 
             return profile;
         } catch (error: any) {
