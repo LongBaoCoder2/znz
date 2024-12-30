@@ -99,3 +99,17 @@ export interface JoinMeetingByIDResponse {
   status: number;
   message: string;
 }
+
+export interface CreateMeetingResponse {
+  data: {
+    id: number;
+    roomId: string;
+    title: string;
+    displayId: string;
+    uri: string;
+    host: number;
+    createdAt: string;
+  };
+  status: number;
+  message: string;
+}

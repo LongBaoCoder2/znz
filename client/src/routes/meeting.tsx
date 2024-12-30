@@ -117,10 +117,12 @@ function Meeting() {
   const { showMessage } = useNotify();
 
 
-  const [showChat, setShowChat] = useState(false);
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
 
+  const [title, setTitle] = useState("ZNZ");
+  const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
+  const [viewMessagesShow, setViewMessagesShow] = useState(false);
 
   const initializeDevice = async () => {
     try {
@@ -274,14 +276,14 @@ function Meeting() {
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                //navigate("/");
+                navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                //navigate("/");
+                navigate("/");
                 break;
               // ... handle other cases
             }
@@ -336,7 +338,7 @@ function Meeting() {
               // ... handle other cases
             }
           }
-        }
+        } 
       }
     };
 
@@ -386,11 +388,6 @@ function Meeting() {
       publish.localStream.getAudioTracks()[0].enabled = false;
     }
   };
-
-
-  const [title, setTitle] = useState("ZNZ");
-  const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
-  const [viewMessagesShow, setViewMessagesShow] = useState(false);
 
   const handleEndCallClick = async () => {
     setIsDisconnecting(true);
@@ -549,18 +546,9 @@ function Meeting() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Messages</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          Some text as placeholder. In real life you can have the elements you
-          have chosen. Like, text, images, lists, etc.
-        </Offcanvas.Body>
-      </Offcanvas>
-
       {/* Chat panel */}
-      <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end">
+      {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
+      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Chat</Offcanvas.Title>
         </Offcanvas.Header>

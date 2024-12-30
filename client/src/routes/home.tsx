@@ -4,7 +4,7 @@ import JoinImage from "../assets/join.svg";
 import HostImage from "../assets/host.svg";
 import axios from "axios";
 import getURL from "../axios/network";
-import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse } from "../axios/interface";
+import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse, CreateMeetingResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import { useNavigate } from "react-router";
 import { readFileSync } from "fs";
@@ -40,6 +40,19 @@ function Home() {
   const [meetingPasswords, setMeetingPasswords] = useState("");
 
   const [requiredPasswords, setRequiredPasswords] = useState(false);
+
+  const [createMeetingName, setCreateMeetingName] = useState("");
+  const [createMeetingPassword, setCreateMeetingPassword] = useState("");
+
+  const [roomInfoModalShow, setRoomInfoModalShow] = useState(false);
+  const [showShareButtons, setShowShareButtons] = useState(false);
+  const [createdRoomInfo, setCreatedRoomInfo] = useState<{
+    displayId: string;
+    title: string;
+    uri: string;
+  } | null>(null);
+  const [isCopiedId, setIsCopiedId] = useState(false);
+  const [isCopiedUri, setIsCopiedUri] = useState(false);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -162,6 +175,31 @@ function Home() {
 
   const handleHostNewMeeting = async () => {
     try {
+      const response = await axios.post<CreateMeetingResponse>(
+        getURL("/meeting"),
+        {
+          title: createMeetingName,
+          password: createMeetingPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+      if (response.status === 201) {
+        console.log("host meeting success");
+        console.log(response);
+        setCreatedRoomInfo({
+          displayId: response.data.data.displayId,
+          title: response.data.data.title,
+          uri: response.data.data.uri
+        });
+        setIsCopiedId(false);
+        setIsCopiedUri(false);
+        setRoomInfoModalShow(true);
+        setHostMeetingModalShow(false);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -175,6 +213,10 @@ function Home() {
 
     }
   }
+
+  const handleCopyToClipboard = (text: string) => {
+    return navigator.clipboard.writeText(text)
+  };
 
   if (loading) {
     return (
@@ -196,7 +238,6 @@ function Home() {
       <Row className='border-bottom p-3'>
         <h1 className='text-primary'>ZNZ</h1>
       </Row>
-
 
       <Row className="pt-3">
         <Col className="col-2 d-flex flex-column">
@@ -382,11 +423,20 @@ function Home() {
           <Form>
             <Form.Group className='mb-3'>
               <Form.Label>Tên cuộc họp</Form.Label>
-              <Form.Control type='text' autoFocus />
+              <Form.Control 
+                type='text' 
+                autoFocus 
+                value={createMeetingName}
+                onChange={(e) => setCreateMeetingName(e.target.value)}
+              />
             </Form.Group>
             <Form.Group>
               <Form.Label>Mật khẩu cuộc họp (tùy chọn)</Form.Label>
-              <Form.Control type='password' />
+              <Form.Control 
+                type='password' 
+                value={createMeetingPassword}
+                onChange={(e) => setCreateMeetingPassword(e.target.value)}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -470,6 +520,58 @@ function Home() {
             Xác nhận
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Room Info Modal */}
+      <Modal show={roomInfoModalShow} onHide={() => setRoomInfoModalShow(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Thông tin phòng họp</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <p><strong>ID:</strong> {createdRoomInfo?.displayId}</p>
+            {createdRoomInfo?.title && <p><strong>Tiêu đề:</strong> {createdRoomInfo.title}</p>}
+            <p><strong>URI:</strong> {createdRoomInfo?.uri}</p>
+          </div>
+          <div className="d-flex gap-2">
+            <Button 
+              variant="secondary" 
+              className="w-50"
+              onClick={() => setShowShareButtons(!showShareButtons)}
+            >
+              Chia sẻ với bạn bè
+            </Button>
+            <Button 
+              variant="primary" 
+              className="w-50"
+              onClick={() => navigate(`/meeting/${createdRoomInfo?.uri}`)}
+            >
+              Tham gia room
+            </Button>
+          </div>
+          {showShareButtons && (
+            <div className="mt-2 d-flex flex-column gap-2">
+              <Button 
+                variant="secondary"
+                onClick={() => {
+                  handleCopyToClipboard(createdRoomInfo?.displayId || '')
+                    .then(() => setIsCopiedId(true))
+                }}
+              >
+                {isCopiedId ? "Sao chép ID" : "Đã sao chép ID"}
+              </Button>
+              <Button 
+                variant="secondary"
+                onClick={() => {
+                  handleCopyToClipboard(createdRoomInfo?.uri || '')
+                    .then(() => setIsCopiedUri(true))
+                }}
+              >
+                {isCopiedUri ? "Sao chép URI" : "Đã sao chép URI"}
+              </Button>
+            </div>
+          )}
+        </Modal.Body>
       </Modal>
     </Container>
   );

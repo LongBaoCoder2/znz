@@ -317,33 +317,33 @@ export const clearPeer = (roomId: string, socket: any) => {
   const clientId = socket.id;
   removeAllConsumersOfClient(roomId, clientId);
 
-    const transport = getConsumerTransport(roomId, clientId);
-    if (transport) {
-      transport.close();
-      removeConsumerTransport(roomId, clientId);
-    }
-  
-    const videoProducer = getProducer(roomId, clientId, 'video');
-    if (videoProducer) {
-      videoProducer.close();
-      removeProducer(roomId, clientId, 'video');
-    }
+  const transport = getConsumerTransport(roomId, clientId);
+  if (transport) {
+    transport.close();
+    removeConsumerTransport(roomId, clientId);
+  }
 
-    const audioProducer = getProducer(roomId, clientId, 'audio');
-    if (audioProducer) {
-      audioProducer.close();
-      removeProducer(roomId, clientId, 'audio');
-    }
-  
-    const producerTransport = getProducerTransport(roomId, clientId);
-    if (producerTransport) {
-      producerTransport.close();
-      removeProducerTransport(roomId, clientId);
-    }
+  const videoProducer = getProducer(roomId, clientId, 'video');
+  if (videoProducer) {
+    videoProducer.close();
+    removeProducer(roomId, clientId, 'video');
+  }
 
-    removeMember(roomId, clientId);
+  const audioProducer = getProducer(roomId, clientId, 'audio');
+  if (audioProducer) {
+    audioProducer.close();
+    removeProducer(roomId, clientId, 'audio');
+  }
 
-    checkEmpty(roomId);
+  const producerTransport = getProducerTransport(roomId, clientId);
+  if (producerTransport) {
+    producerTransport.close();
+    removeProducerTransport(roomId, clientId);
+  }
+
+  removeMember(roomId, clientId);
+
+  checkEmpty(roomId);
 }
 
 export const isHost = (roomId: string, clientId: string) => {
