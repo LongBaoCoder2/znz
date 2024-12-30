@@ -237,6 +237,8 @@ function Meeting() {
               username: string,
               socketId: string,
               joinedAt: Date;
+              isAudioMuted: boolean;
+              isVideoMuted: boolean;
             }) => {
               // Show modal for notifying the user joins 
               console.log(`New member joined: ${member.username}`);
