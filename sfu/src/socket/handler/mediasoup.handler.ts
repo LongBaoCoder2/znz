@@ -294,11 +294,12 @@ const setupMediasoupHandler = (sfuListener: any) => {
 
         if (!allMembers) {
             sfuLogger.info('getAllMembers: no members');
+            callback({ VideoIds: otherProducersVideoIds, AudioIds: otherProducersAudioIds, Members: {} }, null);
+            return;
         }
-
-        const membersObject = Object.fromEntries(allMembers || []);
+        const approvedMembers = Array.from(allMembers.entries()).filter(([_, member]) => member.status === 'approved');
+        const membersObject = Object.fromEntries(approvedMembers);
         sfuLogger.info(`getAllMembers: ${membersObject}`);
-        
 
         callback({ VideoIds: otherProducersVideoIds, AudioIds: otherProducersAudioIds, Members: membersObject }, null);
     });
