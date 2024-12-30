@@ -36,7 +36,7 @@ app.use(loggingMiddleware);
 app.use(errorMiddleware);
 
 /* ================= Define route ================= */
-const authRoute = (new AuthRoute()).router;
+const authRoute = new AuthRoute().router;
 app.use("/api", homeRoute);
 
 app.use("/api", meetingRoute);
