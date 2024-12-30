@@ -1,19 +1,21 @@
 import { CreateMeetingDto } from "@sfu/dtos/meeting.dto";
 import { createMeeting, verifyMeetingPassword } from "@sfu/data-access/meetings";
-import { getMeetingById } from "@sfu/data-access/meetings";
+import { getMeetingByDisplayId } from "@sfu/data-access/meetings";
 import { generateMeetingID } from "@sfu/utils/crypt";
 import { setupRoom } from "@sfu/utils/setupRoom";
 
 
 class MeetingService {
   async createMeeting(hostId: number, hostName: string, meetingDto: CreateMeetingDto) {
-    const { title, displayId, password } = meetingDto;
+    const { title, password } = meetingDto;
 
     const createTitle = title ? title : "New Meeting";
     const uri = generateMeetingID();
     try {
       const { roomId, room } = await setupRoom(createTitle, uri, hostId, password as string);
       const uriRoom = roomId;
+
+      const displayId = generateMeetingID(uriRoom);
       const newMeeting = await createMeeting(createTitle, displayId, uriRoom, hostId, hostName, password);
 
       return { roomId, newMeeting };
@@ -22,12 +24,12 @@ class MeetingService {
     }
   }
 
-  async checkMeetingPassword(meetingId: number, inputPassword?: string) {
+  async checkMeetingPassword(displayId: string, inputPassword?: string) {
     try {
-      const meeting = await getMeetingById(meetingId);
+      const meeting = await getMeetingByDisplayId(displayId);
 
       if (!meeting) {
-        console.log(meetingId);
+        console.log(displayId);
         throw new Error("Meeting not found");
       }
 

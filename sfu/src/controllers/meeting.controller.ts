@@ -38,22 +38,32 @@ const meetingController = {
 
   joinMeetingHandler: async (req: Request, res: Response) => {
     try {
-      const { meetingId, password } : JoinMeetingDto = req.body; 
+      const { displayId, password }: JoinMeetingDto = req.body; 
       const meetingService = new MeetingService();
 
       // Kiểm tra cuộc họp và mật khẩu
-      const result = await meetingService.checkMeetingPassword(meetingId, password as string | undefined);
+      const result = await meetingService.checkMeetingPassword(displayId, password as string | undefined);
 
       if (result.requiresPassword) {
         res.status(401).json({
           message: "Password required"
         });
+        return;
       }
+
+      if (!result.meeting) {
+        res.status(404).json({
+          message: "Meeting not found"
+        });
+        return;
+      }
+
+      const { passwordHash, pwdSalt, ...safeMeetingData } = result.meeting;
 
       // Thành công tham gia cuộc họp
       res.status(200).json({
         message: "Successfully joined meeting",
-        data: result.meeting
+        data: safeMeetingData
       });
     } catch (error: any) {
       sfuLogger.error("Error joining meeting: ", error);
