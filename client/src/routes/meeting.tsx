@@ -21,11 +21,11 @@ import WaitingApprovalModal from "../components/WaitingApprovalModal";
 
 // Error handle - notify modal when failed
 import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
-import MessageModalContainer from "../components/MessageModal";
 // Chat Service
 import { ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAuth } from "../store/AuthContext";
+import { useNotify } from "../store/NotifyContext";
 
 export let connector: Connector;
 let publish: Publish | null = null;
@@ -102,6 +102,7 @@ function Meeting() {
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  
   const [micOn, setMicOn] = useState(true);
   const [cameraOn, setCameraOn] = useState(true);
   const [screenSharing, setScreenSharing] = useState(false);
@@ -113,9 +114,7 @@ function Meeting() {
 
   // A modal to show messages: error or success
   // Example: new member joined or error when setting device
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [modalType, setModalType] = useState<'error' | 'success'>('success');
-  const [modalMessage, setModalMessage] = useState('');
+  const { showMessage } = useNotify();
 
 
   const [showChat, setShowChat] = useState(false);
@@ -136,9 +135,7 @@ function Meeting() {
   };
 
   const notifyNewParticipant = (username: string) => {
-    setModalMessage(`${username} has joined the room`);
-    setModalType('success');
-    setShowMessageModal(true);
+    showMessage(`${username} has joined the room`, 'success');
   };
 
   useEffect(() => {
@@ -228,10 +225,10 @@ function Meeting() {
               setParticipants(prev => prev.filter(participant => participant.socketId !== socketId));
             },
             onNewProducer: () => {
-              setParticipants(subscribe.participants);
+              setParticipants([...subscribe.participants]);
             },
             onSetStateParticipants: () => {
-              setParticipants(subscribe.participants);
+              setParticipants([...subscribe.participants]);
             },
           });
 
@@ -252,18 +249,14 @@ function Meeting() {
               case MediasoupErrorKind.ROOM_NOT_FOUND:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
 
                 navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
 
                 navigate("/");
                 break;
@@ -303,9 +296,7 @@ function Meeting() {
               case MediasoupErrorKind.DeviceLoadFailed:
                 setCameraOn(false);
                 setMicOn(false);
-                setModalMessage(error.message);
-                setModalType('error');
-                setShowMessageModal(true);
+                showMessage(error.message, 'error');
                 break;
               case MediasoupErrorKind.RtpCapabilitiesFailed:
                 // Handle RTP capabilities failure
@@ -386,7 +377,6 @@ function Meeting() {
       setCameraOn(false);
       setMicOn(false);
       // Close modals
-      setShowMessageModal(false);
       setShowWaitingModal(false);
       setShowRequestsModal(false);
       // Clear local video element
@@ -571,13 +561,7 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      {/* Message Modal - (should place in App.tsx)  */}
-      <MessageModalContainer
-        type={modalType}
-        message={modalMessage}
-        showMessageModel={showMessageModal}
-        setShowMessageModal={setShowMessageModal}
-      />
+      
     </Container >
   );
 };
