@@ -4,7 +4,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 
 // Create a new profile
 export async function createProfile(userId: number, displayName: string, fullName: string,
-                                    email: string, phoneNumber: string, avatarUrl: string) {
+                                    email: string, phoneNumber: string, avatarUrl: string, avatarBase64: string) {
   const [newProfile] = await database
     .insert(profile)
     .values({
@@ -14,6 +14,7 @@ export async function createProfile(userId: number, displayName: string, fullNam
       email,
       phoneNumber,
       avatarUrl,
+      avatarBase64,
       createdAt: new Date(),
       lastLoginAt: new Date()
     })
@@ -65,6 +66,10 @@ export async function updateDisplayNameByUserId(userId: number, newDisplayName: 
 
 export async function updateAvatarUrlByUserId(userId: number, newAvatarUrl: string) {
   await database.update(profile).set({ avatarUrl: newAvatarUrl }).where(eq(profile.userId, userId));
+}
+
+export async function updateAvatarBase64ByUserId(userId: number, newAvatarBase64: string) {
+  await database.update(profile).set({ avatarBase64: newAvatarBase64 }).where(eq(profile.userId, userId));
 }
 
 // Delete a profile

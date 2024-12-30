@@ -16,10 +16,13 @@ const profileController = {
       const createProfileDto: ProfileDto = req.body;
 
       createProfileDto.avatarUrl = "assets/about-us.png";
+      createProfileDto.avatarBase64 = readFileSync(createProfileDto.avatarUrl, 'base64');
 
       const profileService = new ProfileService();
       const newProfile = await profileService.createProfile(userId, createProfileDto);
+
       sfuLogger.info("newProfile------------: ", newProfile);
+
       res.status(201).json({
         message: "Profile created successfully.",
         data: newProfile,
@@ -40,25 +43,26 @@ const profileController = {
     try {
       // @ts-ignore
       sfuLogger.info("getProfileByUserIdHandler------------: ", req.user);
+
       const userId = (req as RequestWithUser).user.id;
       const profileService = new ProfileService();
       const profile = await profileService.getProfileByUserId(userId);
 
       sfuLogger.info("Profile------------: ", profile);
 
-      if (profile && profile.avatarUrl) {
-        const fileContent = readFileSync(profile.avatarUrl, 'base64');
-        const profileWithAvatar = {
-          ...profile,
-          avatar: fileContent,
-        }
+      // if (profile && profile.avatarUrl) {
+      //   const fileContent = readFileSync(profile.avatarUrl, 'base64');
+      //   const profileWithAvatar = {
+      //     ...profile,
+      //     avatar: fileContent,
+      //   }
 
-        res.status(200).json({
-          message: "Profile retrieved successfully.",
-          data: profileWithAvatar,
-        });
-        return;
-      }
+      //   res.status(200).json({
+      //     message: "Profile retrieved successfully.",
+      //     data: profileWithAvatar,
+      //   });
+      //   return;
+      // }
 
       res.status(200).json({
         message: "Profile retrieved successfully.",
@@ -83,12 +87,12 @@ const profileController = {
     try {
       const userId = (req as RequestWithUser).user.id;
 
-      if (!req.files) {
-        res.status(400).json({
-          message: "Must have file!",
-        });
-        return;
-      }
+      // if (!req.files) {
+      //   res.status(400).json({
+      //     message: "Must have file!",
+      //   });
+      //   return;
+      // }
 
       const profileService = new ProfileService();
 
@@ -100,19 +104,26 @@ const profileController = {
         return;
       }
 
-      if (req.file) {
-        const avatarUrl = path.join("/uploads/", req.file.filename);
+      const avatarBase64 = req.body.avatarBase64;
+      profileService.updateAvatarBase64ByUserId(userId, avatarBase64);
+
+      res.status(200).json({
+        message: "Avatar updated successfully.",
+      });
+
+      // if (req.file) {
+      //   const avatarUrl = path.join("/uploads/", req.file.filename);
 
 
-        await profileService.updateAvatarUrlByUserId(userId, avatarUrl);
+      //   await profileService.updateAvatarUrlByUserId(userId, avatarUrl);
 
-        const fileContent = readFileSync(avatarUrl, 'base64');
+      //   const fileContent = readFileSync(avatarUrl, 'base64');
 
-        res.status(200).json({
-          message: "Avatar updated successfully.",
-          data: fileContent,
-        });
-      }
+      //   res.status(200).json({
+      //     message: "Avatar updated successfully.",
+      //     data: fileContent,
+      //   });
+      // }
     } catch (error: any) {
       sfuLogger.error("Error updating avatar: ", error);
 
@@ -142,7 +153,7 @@ const profileController = {
 
       const newData = {
         displayName: req.body.displayName,
-        fullname: req.body.fullName,
+        fullName: req.body.fullName,
         email: req.body.email,
         phoneNumber: req.body.phoneNumber,
       };
