@@ -4,7 +4,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 
 // Create a new profile
 export async function createProfile(userId: number, displayName: string, fullName: string,
-                                    email: string, phoneNumber: string, avatarUrl?: string) {
+                                    email: string, phoneNumber: string, avatarUrl: string) {
   const [newProfile] = await database
     .insert(profile)
     .values({

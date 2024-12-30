@@ -3,4 +3,5 @@ export interface ProfileDto {
     fullName: string;
     email: string;
     phoneNumber: string;
+    avatarUrl: string;
 }

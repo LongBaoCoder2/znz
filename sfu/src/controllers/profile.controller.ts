@@ -15,6 +15,8 @@ const profileController = {
       const userId = (req as RequestWithUser).user.id;
       const createProfileDto: ProfileDto = req.body;
 
+      createProfileDto.avatarUrl = "assets/about-us.png";
+
       const profileService = new ProfileService();
       const newProfile = await profileService.createProfile(userId, createProfileDto);
       sfuLogger.info("newProfile------------: ", newProfile);
@@ -44,6 +46,19 @@ const profileController = {
 
       sfuLogger.info("Profile------------: ", profile);
 
+      if (profile && profile.avatarUrl) {
+        const fileContent = readFileSync(profile.avatarUrl, 'base64');
+        const profileWithAvatar = {
+          ...profile,
+          avatar: fileContent,
+        }
+
+        res.status(200).json({
+          message: "Profile retrieved successfully.",
+          data: profileWithAvatar,
+        });
+        return;
+      }
 
       res.status(200).json({
         message: "Profile retrieved successfully.",

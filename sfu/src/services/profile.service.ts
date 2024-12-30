@@ -7,10 +7,10 @@ const sfuLogger = childLogger("sfu");
 class ProfileService {
     async createProfile(userId: number, createProfileDto: ProfileDto) {
         try {
-            const { displayName, fullName, email, phoneNumber } = createProfileDto;
+            const { displayName, fullName, email, phoneNumber, avatarUrl } = createProfileDto;
 
             sfuLogger.info(`createProfile------------: ${userId}, ${displayName}, ${fullName}, ${email}, ${phoneNumber}`);
-            const profile = await createProfile(userId, displayName, fullName, email, phoneNumber);
+            const profile = await createProfile(userId, displayName, fullName, email, phoneNumber, avatarUrl);
 
             return profile;
         } catch (error: any) {
