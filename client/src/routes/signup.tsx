@@ -4,9 +4,12 @@ import AboutUsImage from "../assets/about-us.png";
 import axios from "axios";
 import getURL from "../axios/network";
 import { CreateProfileResponse } from "../axios/interface";
-import Cookies from "js-cookie";
+import { useAuth } from "../store/AuthContext";
+import Loading from "../components/Loading";
 
 function SignUp() {
+  const { loading, accessToken } = useAuth();
+
   const [fullName, setFullName] = useState("");
   const [isFullNameValid, setIsFullNameValid] = useState(true);
   const [displayName, setDisplayName] = useState("");
@@ -31,9 +34,6 @@ function SignUp() {
       return;
     }
     try {
-
-      const accessToken = Cookies.get("accessToken");
-      console.log(accessToken);
       const response = await axios.post<CreateProfileResponse>(getURL("/profile"), {
         displayName: displayName,
         fullName: fullName,
@@ -54,6 +54,16 @@ function SignUp() {
 
     setModalShow(true);
   };
+
+  useEffect(() => {
+    if (loading) return;
+  }, [loading])
+
+  if (loading)  {
+    return <Loading />
+  }
+
+
 
   return (
     <Container fluid className="vw-100">

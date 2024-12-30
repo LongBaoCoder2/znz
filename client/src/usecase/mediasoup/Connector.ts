@@ -16,7 +16,9 @@ interface ConnectorEvents {
   onMemberJoined?: (member: {
     username: string,
     socketId: string,
-    joinedAt: Date
+    joinedAt: Date,
+    isAudioMuted: boolean,
+    isVideoMuted: boolean
   }) => void;
   onMemberLeft?: (socketId: string) => void;
   onHostChanged?: () => void;
@@ -150,7 +152,9 @@ export class Connector {
       this.socket.on('member:joined', async (member: {
         username: string,
         socketId: string, 
-        joinedAt: Date
+        joinedAt: Date,
+        isAudioMuted: boolean,
+        isVideoMuted: boolean
       }) => {
         console.log(`New member joined: ${member.username}`);
   
