@@ -38,7 +38,7 @@ function SignIn() {
         username: signInUsername,
         password: signInPassword,
       });
-
+      console.log(response);
       login(response.data);
       navigate("/home");
     }
