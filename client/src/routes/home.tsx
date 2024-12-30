@@ -10,7 +10,7 @@ import { useNavigate } from "react-router";
 
 function Home() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, accessToken, loading } = useAuth();
+  const { isAuthenticated, user, accessToken, loading, logout } = useAuth();
 
   const [avatar, setAvatar] = useState("https://placehold.co/400");
   const [fullName, setFullName] = useState("Thái Văn Mạnh");
@@ -70,6 +70,15 @@ function Home() {
     setIsEmailValid(!isEmailValid);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/signin');
+    } catch (error) {
+
+    }
+  }
+
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
@@ -105,6 +114,7 @@ function Home() {
           </Button>
           <Button
             variant="light"
+            onClick={handleLogout}
           >
             Đăng xuất
           </Button>
