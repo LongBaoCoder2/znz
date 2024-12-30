@@ -4,40 +4,51 @@ import JoinImage from "../assets/join.svg";
 import HostImage from "../assets/host.svg";
 import axios from "axios";
 import getURL from "../axios/network";
-import { GetProfileResponse } from "../axios/interface";
+import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import { useNavigate } from "react-router";
+import { readFileSync } from "fs";
 
 function Home() {
   const navigate = useNavigate();
   const { isAuthenticated, user, accessToken, loading } = useAuth();
 
-  const [avatar, setAvatar] = useState("https://placehold.co/400");
-  const [fullName, setFullName] = useState("Thái Văn Mạnh");
-  const [isFullNameValid, setIsFullNameValid] = useState(true);
-  const [displayName, setDisplayName] = useState("TVM");
-  const [isDisplayNameValid, setIsDisplayNameValid] = useState(true);
-  const [email, setEmail] = useState("example@gmail.com");
-  const [isEmailValid, setIsEmailValid] = useState(true);
-  const [phoneNumber, setPhoneNumber] = useState("0123456789");
+  const [avatar, setAvatar] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const [joinMeetingByIDModalShow, setJoinMeetingByIDModalShow] = useState(false);
   const [joinMeetingByURIModalShow, setJoinMeetingByURIModalShow] = useState(false);
   const [passwordModalShow, setPasswordModalShow] = useState(false);
   const [hostMeetingModalShow, setHostMeetingModalShow] = useState(false);
+
+
   const [editProfileModalShow, setEditProfileModalShow] = useState(false);
+  const [editFullName, setEditFullName] = useState("Thái Văn Mạnh");
+  const [editDisplayName, setEditDisplayName] = useState("TVM");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhoneNumber, setEditPhoneNumber] = useState("");
+  const [isFullNameValid, setIsFullNameValid] = useState(true);
+  const [isDisplayNameValid, setIsDisplayNameValid] = useState(true);
+  const [isEmailValid, setIsEmailValid] = useState(true);
+
+  const [editAvatarModalShow, setEditAvatarModalShow] = useState(false);
+  const [editAvatar, setEditAvatar] = useState("");
+
+  const [meetingID, setMeetingID] = useState("");
 
   useEffect(() => {
     const getProfile = async () => {
-      if (loading) return; 
+      if (loading) return;
 
       if (!isAuthenticated || !user) {
         navigate('/signin');
         return;
       }
 
-       console.log("user: ", user);
-
+      console.log("user: ", user);
 
       try {
         const response = await axios.get<GetProfileResponse>(getURL("/profile"),
@@ -52,7 +63,7 @@ function Home() {
         setDisplayName(response.data.data.displayName);
         setEmail(response.data.data.email);
         setPhoneNumber(response.data.data.phoneNumber);
-        setAvatar(response.data.data.avatarUrl);
+        setAvatar(response.data.data.avatarBase64);
       }
       catch (error) {
         console.error(error);
@@ -61,13 +72,94 @@ function Home() {
     getProfile();
   }, [loading, isAuthenticated, user]);
 
-  const handleSignUp = () => {
-    if (fullName.length === 0) {
-      setIsFullNameValid(false);
-      return;
+  const handleEditProfile = async () => {
+    try {
+      const response = await axios.patch<EditProfileResponse>(getURL("/profile"),
+        {
+          fullName: editFullName,
+          displayName: editDisplayName,
+          email: editEmail,
+          phoneNumber: editPhoneNumber
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        },
+      );
+      console.log("edit profile response: ");
+      console.log(response);
+      if (response.status === 200) {
+        console.log("edit profile success");
+        setFullName(editFullName);
+        setDisplayName(editDisplayName);
+        setEmail(editEmail);
+        setPhoneNumber(editPhoneNumber);
+      }
+      setEditProfileModalShow(false);
     }
-    setIsFullNameValid(true);
-    setIsEmailValid(!isEmailValid);
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditAvatar = async () => {
+    try {
+      const response = await axios.patch<EditProfileResponse>(getURL("/profile/avatar"),
+        {
+          avatarBase64: editAvatar
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        },
+      );
+      if (response.status === 200) {
+        setAvatar(editAvatar);
+        setEditAvatarModalShow(false);
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleJoinMeetingByID = async () => {
+    try {
+      const response = await axios.post<JoinMeetingByIDResponse>(getURL("/meeting/join"),
+        {
+          meetingId: meetingID
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          }
+        },
+      );
+      if (response.status === 200) {
+        console.log("join meeting success");
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleJoinMeetingByURI = async () => {
+    try {
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleHostNewMeeting = async () => {
+    try {
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
   if (loading) {
@@ -115,9 +207,11 @@ function Home() {
             <Row>
               <Col className="col-4 px-5">
                 <Image
-                  src="https://placehold.co/400"
+                  src={`data:image/png;base64,${avatar}`}
                   fluid
                   rounded
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setEditAvatarModalShow(true)}
                 />
               </Col>
               <Col className="col-6">
@@ -128,7 +222,13 @@ function Home() {
                 <b
                   className="text-primary"
                   style={{ cursor: "pointer" }}
-                  onClick={() => setEditProfileModalShow(true)}
+                  onClick={() => {
+                    setEditProfileModalShow(true);
+                    setEditFullName(fullName);
+                    setEditDisplayName(displayName);
+                    setEditEmail(email);
+                    setEditPhoneNumber(phoneNumber);
+                  }}
                 >
                   Chỉnh sửa
                 </b>
@@ -230,12 +330,19 @@ function Home() {
               <Form.Control
                 type="text"
                 autoFocus
+                value={meetingID}
+                onChange={e => setMeetingID(e.target.value)}
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Tham gia</Button>
+          <Button
+            variant="primary"
+            onClick={handleJoinMeetingByID}
+          >
+            Tham gia
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -262,7 +369,12 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Tham gia</Button>
+          <Button
+            variant="primary"
+            onClick={handleJoinMeetingByURI}
+          >
+            Tham gia
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -295,7 +407,12 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Xác nhận</Button>
+          <Button
+            variant="primary"
+            onClick={handleHostNewMeeting}
+          >
+            Xác nhận
+          </Button>
         </Modal.Footer>
       </Modal>
 
@@ -316,38 +433,79 @@ function Home() {
               <Form.Label>Họ và tên</Form.Label>
               <Form.Control
                 type="text"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
+                value={editFullName}
+                onChange={e => setEditFullName(e.target.value)}
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Tên hiển thị</Form.Label>
               <Form.Control
                 type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
+                value={editDisplayName}
+                onChange={e => setEditDisplayName(e.target.value)}
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={editEmail}
+                onChange={e => setEditEmail(e.target.value)}
               />
             </Form.Group>
             <Form.Group>
               <Form.Label>Điện thoại</Form.Label>
               <Form.Control
                 type="text"
-                value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
+                value={editPhoneNumber}
+                onChange={e => setEditPhoneNumber(e.target.value)}
               />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary">Xác nhận</Button>
+          <Button
+            variant="primary"
+            onClick={handleEditProfile}
+          >
+            Xác nhận
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={editAvatarModalShow}
+        onHide={() => setEditAvatarModalShow(false)}
+        backdrop="static"
+        keyboard={false}
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Chỉnh sửa ảnh đại diện</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Tải ảnh đại diện lên</Form.Label>
+              <Form.Control type="file" accept="image/png, image/jpg" onChange={(e: any) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const avatarBase64 = reader.result as string;
+                  setEditAvatar(avatarBase64.split(',')[1]);
+                };
+                reader.readAsDataURL(e.target.files[0]);
+              }} />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={handleEditAvatar}
+          >
+            Xác nhận
+          </Button>
         </Modal.Footer>
       </Modal>
 

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, integer, text } from "drizzle-orm/pg-core";
 import { user } from "./user.schema";
 
 export const profile = pgTable("profile", {
@@ -10,5 +10,6 @@ export const profile = pgTable("profile", {
   avatarUrl: varchar("avatar_url", { length: 255 }),
   createdAt: timestamp("created_at"),
   lastLoginAt: timestamp("last_login_at"),
-  userId: integer("user_id").references(() => user.id)
+  userId: integer("user_id").references(() => user.id),
+  avatarBase64: text("avatar_base64"),
 });
