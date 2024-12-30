@@ -7,10 +7,21 @@ import SignUp from "./routes/signup.tsx";
 import Home from "./routes/home.tsx";
 import Meeting from "./routes/meeting.tsx";
 import { AuthProvider } from "./store/AuthContext";
+import { NotifyProvider } from "./store/NotifyContext";
+import MessageModalContainer from "./components/MessageModal";
+import { useNotify } from "./store/NotifyContext";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AuthProvider>
+function Root() {
+  const { hideMessage, isVisible, message, type } = useNotify();
+
+  return (
+    <>
+      <MessageModalContainer
+        type={type}
+        message={message}
+        isVisible={isVisible}
+        hideMessage={hideMessage}
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
@@ -20,6 +31,16 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/meeting/:URI" element={<Meeting />} />
         </Routes>
       </BrowserRouter>
+    </>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <AuthProvider>
+      <NotifyProvider>
+        <Root />
+      </NotifyProvider>
     </AuthProvider>
   </StrictMode>
 );
