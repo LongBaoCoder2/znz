@@ -15,7 +15,8 @@ class AuthService {
   public createRefreshToken(user: User): TokenData {
     const dataStoredInToken: DataStoredInToken = { _id: user.id };
     const secretKey: string = process.env.REFRESH_SECRET_KEY || "RefreshSecret";
-    const expiresIn: number = 7 * 24 * 60 * 60; // 7 days
+    // const expiresIn: number = 7 * 24 * 60 * 60; // 7 days
+    const expiresIn = '7d';
 
     return { expiresIn, token: jwt.sign(dataStoredInToken, secretKey, { expiresIn }) };
   }
@@ -25,7 +26,8 @@ class AuthService {
     const dataStoredInToken: DataStoredInToken = { _id: user.id };
     const secretKey: string = process.env.SECRET_KEY || "secret";
     sfuLogger.info("createToken - secretKey: " + secretKey);
-    const expiresIn: number = 15 * 60; // 15p
+    // const expiresIn: number = 15 * 60; // 15p
+    const expiresIn = '7d';
     const token = jwt.sign(dataStoredInToken, secretKey, { expiresIn });
     sfuLogger.info(`token: ${token}`);
     return { expiresIn, token: token };

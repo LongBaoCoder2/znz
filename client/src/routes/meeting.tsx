@@ -1,20 +1,10 @@
-import { Container, Row, Col, Button, Image, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
-import addParticipantImage from "../assets/add-participant.svg";
-import microphoneOffImage from "../assets/microphone-off.svg";
-import microphoneOnImage from "../assets/microphone-on.svg";
-import cameraOffImage from "../assets/camera-off.svg";
-import cameraOnImage from "../assets/camera-on.svg";
-import shareScreenOffImage from "../assets/share-screen-off.svg";
-import shareScreenOnImage from "../assets/share-screen-on.svg";
-import endCallImage from "../assets/end-call.svg";
-import viewMessagesImage from "../assets/view-messages.svg";
-import viewParticipantsImage from "../assets/view-participants.svg";
+import { Container, Row, Col, Button, Card, OverlayTrigger, Popover, Offcanvas, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { Connector, Publish, Subscribe, MediasoupDevice } from "../usecase/mediasoup";
 import { Device } from "mediasoup-client";
 import { JoinRequest, Participant } from "../interface/Participant";
-import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots, Chat } from "react-bootstrap-icons";
+import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots } from "react-bootstrap-icons";
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
@@ -32,6 +22,7 @@ let publish: Publish | null = null;
 let subscribe: Subscribe;
 let device: MediasoupDevice;
 export let chatService: ChatService;
+const title = "ZNZ";
 
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -120,7 +111,6 @@ function Meeting() {
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
 
-  const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
 
@@ -506,12 +496,6 @@ function Meeting() {
           </Button>
         </Col>
         <Col className="col-2 d-flex ps-5">
-          {/* <Image
-            src={endCallImage}
-            className="w-100"
-            style={{ cursor: "pointer" }}
-            onClick={handleEndCallClick}
-          /> */}
 
           <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
@@ -548,11 +532,16 @@ function Meeting() {
 
       {/* Chat panel */}
       {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
-      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Chat</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
+      <Offcanvas 
+        show={viewMessagesShow} 
+        onHide={() => setViewMessagesShow(false)} 
+        placement="end"
+        style={{ backgroundColor: '#1F2335' }}
+      >
+        {/* <Offcanvas.Header style={{ backgroundColor: '#161929', borderBottom: 'none' }}>
+          <Offcanvas.Title style={{ color: 'white' }}>Chat</Offcanvas.Title>
+        </Offcanvas.Header> */}
+        <Offcanvas.Body className="p-0">
           {chatService && (
             <ChatPanel
               messages={messages}

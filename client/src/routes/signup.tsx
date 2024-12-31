@@ -6,6 +6,7 @@ import getURL from "../axios/network";
 import { CreateProfileResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import Loading from "../components/Loading";
+import { useNavigate } from "react-router";
 
 function SignUp() {
   const { loading, accessToken } = useAuth();
@@ -54,6 +55,15 @@ function SignUp() {
 
     setModalShow(true);
   };
+
+  const { hasJustRegistered, setHasJustRegistered } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!hasJustRegistered) {
+      navigate("/signin"); // Redirect to signin if the user hasn't just registered
+    }
+  }, [hasJustRegistered, navigate]);
 
   useEffect(() => {
     if (loading) return;
@@ -172,7 +182,10 @@ function SignUp() {
 
       <Modal
         show={modalShow}
-        onHide={() => setModalShow(false)}
+        onHide={() => {
+          setModalShow(false);
+          setHasJustRegistered(false);
+        }}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered

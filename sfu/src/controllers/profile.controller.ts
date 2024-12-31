@@ -40,12 +40,9 @@ const profileController = {
 
   getProfileByUserIdHandler: async (req: Request, res: Response) => {
     try {
-      // @ts-ignore
-
       const userId = (req as RequestWithUser).user.id;
       const profileService = new ProfileService();
       const profile = await profileService.getProfileByUserId(userId);
-
 
       // if (profile && profile.avatarUrl) {
       //   const fileContent = readFileSync(profile.avatarUrl, 'base64');
