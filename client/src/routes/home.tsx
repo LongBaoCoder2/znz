@@ -230,10 +230,10 @@ function Home() {
   const handleChangePassword = async () => {
     try {
       const response = await axios.patch(
-        getURL("/profile/password"),
+        getURL("/auth/password"),
         {
-          currentPassword,
-          newPassword
+          plainTextOldPassword : currentPassword,
+          plainTextNewPassword : newPassword
         },
         {
           headers: {
@@ -242,7 +242,18 @@ function Home() {
         }
       );
       if (response.status === 200) {
-        console.log("change password success");
+        
+        console.log("change password successfully");
+        setChangePasswordModalShow(false);
+      }
+
+      if (response.status === 500) {
+        console.log("change password fail");
+        setChangePasswordModalShow(false);
+      }
+
+      if (response.status === 409) {
+        console.log("wrong old password");
         setChangePasswordModalShow(false);
       }
     } catch (error) {
