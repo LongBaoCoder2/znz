@@ -3,8 +3,9 @@ import React, { createContext, useContext, useState } from 'react';
 type NotifyType = 'error' | 'success';
 
 interface NotifyContextType {
-  showMessage: (message: string, type: NotifyType) => void;
+  showMessage: (title: string, message: string, type: NotifyType) => void;
   hideMessage: () => void;
+  title: string;
   isVisible: boolean;
   message: string;
   type: NotifyType;
@@ -16,8 +17,10 @@ export function NotifyProvider({ children }: { children: React.ReactNode }) {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [type, setType] = useState<NotifyType>('success');
+  const [title, setTitle] = useState<string>('');
 
-  const showMessage = (message: string, type: NotifyType) => {
+  const showMessage = (title: string, message: string, type: NotifyType) => {
+    setTitle(title);
     setMessage(message);
     setType(type);
     setIsVisible(true);
@@ -28,7 +31,7 @@ export function NotifyProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <NotifyContext.Provider value={{ showMessage, hideMessage, isVisible, message, type }}>
+    <NotifyContext.Provider value={{ showMessage, hideMessage, title, isVisible, message, type }}>
       {children}
     </NotifyContext.Provider>
   );

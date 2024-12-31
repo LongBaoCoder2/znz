@@ -7,6 +7,7 @@ import getURL from "../axios/network";
 import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse, CreateMeetingResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import { useNavigate } from "react-router";
+import { useNotify } from "../store/NotifyContext";
 
 function Home() {
   const navigate = useNavigate();

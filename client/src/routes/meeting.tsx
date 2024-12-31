@@ -137,7 +137,7 @@ function Meeting() {
   };
 
   const notifyNewParticipant = (username: string) => {
-    showMessage(`${username} has joined the room`, 'success');
+    showMessage("Member join", `${username} has joined the room`, 'success');
   };
 
   useEffect(() => {
@@ -162,7 +162,7 @@ function Meeting() {
         setMicOn(true);
         editVideoAudio('audioOn');
       } catch (error) {
-        showMessage(`Error starting audio: ${error}`, 'error');
+        showMessage("Audio error", `Error starting audio: ${error}`, 'error');
         setMicOn(false);
       }
     }
@@ -185,7 +185,7 @@ function Meeting() {
         setCameraOn(true);
         editVideoAudio('videoOn');
       } catch (error) {
-        showMessage(`Error starting video: ${error}`, 'error');
+        showMessage("Video error", `Error starting video: ${error}`, 'error');
         setCameraOn(false);
       }
     }
@@ -274,14 +274,14 @@ function Meeting() {
               case MediasoupErrorKind.ROOM_NOT_FOUND:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Room error", error.message, 'error');
 
                 navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Room error", error.message, 'error');
 
                 navigate("/");
                 break;
@@ -330,7 +330,7 @@ function Meeting() {
               case MediasoupErrorKind.DeviceLoadFailed:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Device error", error.message, 'error');
                 break;
               case MediasoupErrorKind.RtpCapabilitiesFailed:
                 // Handle RTP capabilities failure
