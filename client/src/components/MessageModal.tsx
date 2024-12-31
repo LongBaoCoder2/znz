@@ -25,11 +25,22 @@ export const MessageModal = ({ type, message, show, onClose }: any) => {
         position: 'absolute',
         top: '10px',
         left: '10px',
-        minWidth: '250px',
+        minWidth: '18vw',
+        padding: '5px',
         ...styles[type],
       }}
     >
-      <Toast.Body>{message}</Toast.Body>
+      <Toast.Body
+        style={{
+          fontSize: '1em',         // Change font size here
+          display: 'flex',          // Use flexbox for centering
+          alignItems: 'center',     // Vertically center the text
+          // justifyContent: 'center', // Optionally, horizontally center the text
+          // fontWeight: 'bold',
+        }}
+      >
+        {message}
+      </Toast.Body>
     </Toast>
   );
 };
