@@ -53,9 +53,7 @@ function Root() {
           <Route 
             path="/meeting/:URI" 
             element={
-              <ProtectedRoute requireAuth redirectPath="/signin">
                 <Meeting />
-              </ProtectedRoute>
             } 
           />
         </Routes>
