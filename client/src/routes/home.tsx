@@ -54,6 +54,17 @@ function Home() {
   const [isCopiedId, setIsCopiedId] = useState(false);
   const [isCopiedUri, setIsCopiedUri] = useState(false);
 
+  const [changePasswordModalShow, setChangePasswordModalShow] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [isCurrentPasswordValid, setIsCurrentPasswordValid] = useState(true);
+  const [newPassword, setNewPassword] = useState("");
+  const [isNewPasswordValid, setIsNewPasswordValid] = useState(true);
+  const [confirmedPassword, setConfirmedPassword] = useState("");
+  const [isConfirmedPasswordValid, setIsConfirmedPasswordValid] = useState(true);
+
+
+  const [signOutModalShow, setSignOutModalShow] = useState(false);
+
   useEffect(() => {
     const getProfile = async () => {
       if (loading) return;
@@ -205,6 +216,29 @@ function Home() {
     }
   };
 
+  const handleChangePassword = async () => {
+    try {
+      const response = await axios.patch(
+        getURL("/profile/password"),
+        {
+          currentPassword,
+          newPassword
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+      if (response.status === 200) {
+        console.log("change password success");
+        setChangePasswordModalShow(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -212,10 +246,10 @@ function Home() {
     } catch (error) {
 
     }
-  }
+  };
 
   const handleCopyToClipboard = (text: string) => {
-    return navigator.clipboard.writeText(text)
+    return navigator.clipboard.writeText(text);
   };
 
   if (loading) {
@@ -246,12 +280,13 @@ function Home() {
           </Button>
           <Button
             variant="light"
+            onClick={() => setChangePasswordModalShow(true)}
           >
             Đổi mật khẩu
           </Button>
           <Button
             variant="light"
-            onClick={handleLogout}
+            onClick={() => setSignOutModalShow(true)}
           >
             Đăng xuất
           </Button>
@@ -360,7 +395,7 @@ function Home() {
           <Form>
             <Form.Group>
               <Form.Label>Nhập ID cuộc họp</Form.Label>
-              <Form.Control type='text' style={{ marginBottom: 15}} autoFocus value={meetingID} onChange={(e) => setMeetingID(e.target.value)} />
+              <Form.Control type='text' style={{ marginBottom: 15 }} autoFocus value={meetingID} onChange={(e) => setMeetingID(e.target.value)} />
               {requiredPasswords && (
                 <>
                   <Form.Label>Nhập Password</Form.Label>
@@ -423,17 +458,17 @@ function Home() {
           <Form>
             <Form.Group className='mb-3'>
               <Form.Label>Tên cuộc họp</Form.Label>
-              <Form.Control 
-                type='text' 
-                autoFocus 
+              <Form.Control
+                type='text'
+                autoFocus
                 value={createMeetingName}
                 onChange={(e) => setCreateMeetingName(e.target.value)}
               />
             </Form.Group>
             <Form.Group>
               <Form.Label>Mật khẩu cuộc họp (tùy chọn)</Form.Label>
-              <Form.Control 
-                type='password' 
+              <Form.Control
+                type='password'
                 value={createMeetingPassword}
                 onChange={(e) => setCreateMeetingPassword(e.target.value)}
               />
@@ -534,15 +569,15 @@ function Home() {
             <p><strong>URI:</strong> {createdRoomInfo?.uri}</p>
           </div>
           <div className="d-flex gap-2">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               className="w-50"
               onClick={() => setShowShareButtons(!showShareButtons)}
             >
               Chia sẻ với bạn bè
             </Button>
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               className="w-50"
               onClick={() => navigate(`/meeting/${createdRoomInfo?.uri}`)}
             >
@@ -551,20 +586,20 @@ function Home() {
           </div>
           {showShareButtons && (
             <div className="mt-2 d-flex flex-column gap-2">
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={() => {
                   handleCopyToClipboard(createdRoomInfo?.displayId || '')
-                    .then(() => setIsCopiedId(true))
+                    .then(() => setIsCopiedId(true));
                 }}
               >
                 {isCopiedId ? "Sao chép ID" : "Đã sao chép ID"}
               </Button>
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={() => {
                   handleCopyToClipboard(createdRoomInfo?.uri || '')
-                    .then(() => setIsCopiedUri(true))
+                    .then(() => setIsCopiedUri(true));
                 }}
               >
                 {isCopiedUri ? "Sao chép URI" : "Đã sao chép URI"}
@@ -573,8 +608,106 @@ function Home() {
           )}
         </Modal.Body>
       </Modal>
+
+      <Modal
+        show={changePasswordModalShow}
+        onHide={() => setChangePasswordModalShow(false)}
+        backdrop='static'
+        keyboard={false}
+        aria-labelledby='contained-modal-title-vcenter'
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Đổi mật khẩu</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nhập mật khẩu hiện tại</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Mật khẩu hiện tại"
+                value={currentPassword}
+                onChange={e => {
+                  setIsCurrentPasswordValid(true);
+                  setCurrentPassword(e.target.value);
+                }}
+              />
+              {!isCurrentPasswordValid && (
+                <Form.Text className="text-danger">
+                  *Mật khẩu không chính xác!
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nhập mật khẩu mới</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Mật khẩu mới"
+                value={newPassword}
+                onChange={e => {
+                  setIsNewPasswordValid(true);
+                  setNewPassword(e.target.value);
+                }}
+              />
+              {!isNewPasswordValid && (
+                <Form.Text className="text-danger">
+                  *Mật khẩu phải chứa ít nhất 8 ký tự, gồm ít nhất một ký tự hoa, một ký tự thường và một số.
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Xác nhận mật khẩu mới</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Xác nhận mật khẩu mới"
+                value={confirmedPassword}
+                onChange={e => {
+                  setIsConfirmedPasswordValid(true);
+                  setConfirmedPassword(e.target.value);
+                }}
+              />
+              {!isCurrentPasswordValid && (
+                <Form.Text className="text-danger">
+                  *Mật khẩu không khớp!
+                </Form.Text>
+              )}
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='primary' onClick={handleChangePassword}>
+            Xác nhận
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={signOutModalShow}
+        onHide={() => setSignOutModalShow(false)}
+        backdrop='static'
+        keyboard={false}
+        aria-labelledby='contained-modal-title-vcenter'
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Đăng xuất</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className='mb-3'>
+              <Form.Label>Bạn có chắc chắn muốn đăng xuất?</Form.Label>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='primary' onClick={handleLogout}>
+            Xác nhận
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
-}
+};
 
 export default Home;
