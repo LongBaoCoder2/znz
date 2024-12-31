@@ -1,4 +1,4 @@
-import { Container, Row, Col, Button, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Button, Card, OverlayTrigger, Popover, Modal, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { Connector, Publish, Subscribe, MediasoupDevice } from "../usecase/mediasoup";
@@ -134,6 +134,8 @@ function Meeting() {
   const [notifications, setNotifications] = useState<Array<{ id: number; user: string; message: string; }>>([]);
   const notificationCounterRef = useRef(0);
 
+  const [isUserReady, setIsUserReady] = useState(false);
+
   const initializeDevice = async () => {
     try {
       const routerRtpCapabilities = await connector.sendRequest('getRouterRtpCapabilities', {});
@@ -151,14 +153,13 @@ function Meeting() {
   };
 
   useEffect(() => {
-    if (loading) return;
-  }, [loading]);
-
-  useEffect(() => {
-    if (user) {
-      setUsername(user.displayName || "Participant");
+    if (!loading) {
+      if (user) {
+        setUsername(user.displayName || "Participant");
+      }
+      setIsUserReady(true);
     }
-  }, [user]);
+  }, [loading, user]);
 
   // Handler functions
   const handleMicToggle = async () => {
@@ -225,7 +226,7 @@ function Meeting() {
 
   useEffect(() => {
     async function initializeSocket() {
-      if (URI) {
+      if (URI && isUserReady) {
         try {
           console.log("user: ", user);
           console.log("username: ", username);
@@ -312,12 +313,12 @@ function Meeting() {
     return () => {
       chatService?.dispose();
     };
-  }, [URI]);
+  }, [URI, isUserReady]);
 
   useEffect(() => {
     if (chatService) {
       const handleMessage = (message: ChatMessage) => {
-        if (message.senderName !== username) {
+        if (message.senderId !== connector?.socket.id) {
           const id = notificationCounterRef.current++;
           setNotifications(prev => [...prev, {
             id,
@@ -330,7 +331,7 @@ function Meeting() {
       chatService.addMessageListener(handleMessage);
       return () => chatService.removeMessageListener(handleMessage);
     }
-  }, [chatService, username]);
+  }, [chatService, connector]);
 
   useEffect(() => {
     const initializePublish = async () => {
@@ -503,7 +504,7 @@ function Meeting() {
               micOn={micOn}
               cameraOn={cameraOn}
             />
-            <Col className="h-100 p-2 col-3 align-self-start" style={{ overflowY: "auto" }}>
+            <Col className="h-100 p-2 col-3 align-self-start" style={{ maxHeight: "80vh", overflowY: "auto", scrollbarWidth: "none" }}>
               {participants.map((participant: Participant, index: number) => (
                 <UserCard
                   key={index}
@@ -616,17 +617,6 @@ function Meeting() {
           </Button>
         </Col>
       </Row>
-
-      {/* Chat panel */}
-      <Offcanvas show={false} onHide={() => setViewParticipantsShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Participants</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          Some text as placeholder. In real life you can have the elements you
-          have chosen. Like, text, images, lists, etc.
-        </Offcanvas.Body>
-      </Offcanvas>
 
       {connector?.role === 'host' && joinRequests.length > 0 && (
         <Button
