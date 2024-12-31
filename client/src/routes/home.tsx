@@ -87,11 +87,11 @@ function Home() {
     getProfile();
   }, [loading, isAuthenticated, user]);
 
- useEffect(() => {
-   if (!hasLoggedIn) {
-     showMessage("Login successful", "success");
-   }
- }, [hasLoggedIn]);
+//  useEffect(() => {
+//    if (!hasLoggedIn) {
+//      showMessage("Login", "Login successful", "success");
+//    }
+//  }, [hasLoggedIn]);
 
   const handleEditProfile = async () => {
     try {
@@ -117,7 +117,7 @@ function Home() {
         setDisplayName(editDisplayName);
         setEmail(editEmail);
         setPhoneNumber(editPhoneNumber);
-        showMessage("Edit successful", "success");
+        showMessage("Profile" ,"Edit successful", "success");
       }
       setEditProfileModalShow(false);
     } catch (error) {
@@ -199,7 +199,7 @@ function Home() {
       );
       if (response.status === 201) {
         console.log("host meeting success");
-        showMessage("Create meeting successful", "success");
+        showMessage("Meeting", "Create meeting successful", "success");
         console.log(response);
         setCreatedRoomInfo({
           displayId: response.data.data.displayId,
@@ -220,7 +220,7 @@ function Home() {
     try {
       await logout();
       navigate('/signin');
-      showMessage("Logiut successful", "error");
+      showMessage("Logout", "Logout successful", "success");
     } catch (error) {
 
     }

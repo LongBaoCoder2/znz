@@ -150,7 +150,7 @@ function Meeting() {
       publish?.pauseProducer("audio");
       setMicOn(false);
       editVideoAudio("audioOff");
-      showMessage("Mic off", "error");
+      showMessage("Micro", "Micro off", "error");
     } else {
       try {
         if (!publish?.isPublishingAudio) {
@@ -162,7 +162,7 @@ function Meeting() {
         console.log(localVideoRef.current);
         setMicOn(true);
         editVideoAudio('audioOn');
-        showMessage("Mic on", "success");
+        showMessage("Micro", "Mic on", "success");
 
       } catch (error) {
         showMessage("Audio error", `Error starting audio: ${error}`, 'error');
@@ -176,7 +176,7 @@ function Meeting() {
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
-      showMessage("Camera off", "error");
+      showMessage("Camera", "Camera off", "error");
 
     } else {
       try {
@@ -189,7 +189,7 @@ function Meeting() {
         console.log(localVideoRef.current);
         setCameraOn(true);
         editVideoAudio('videoOn');
-        showMessage("Camera on", "success");    
+        showMessage("Camera", "Camera on", "success");    
       } catch (error) {
         showMessage("Video error", `Error starting video: ${error}`, 'error');
         setCameraOn(false);
@@ -199,10 +199,10 @@ function Meeting() {
   const handleScreenSharingToggle = () => {
     setScreenSharing((prev) => !prev);
     if(!screenSharing) {
-      showMessage("Screen Sharing", "success");
+      showMessage("Screen", "Screen Sharing", "success");
     }
     else {
-      showMessage("Stop Sharing", "error");
+      showMessage("Screen", "Stop Sharing", "error");
     }
   }
 
@@ -279,7 +279,7 @@ function Meeting() {
           if (connector.role === 'host') {
             await initializeDevice();
           }
-          showMessage("Room joined successfully", "success");
+          showMessage("Meeting", "Meeting joined successfully", "success");
         } catch (error) {
 
           // Error handle - notify modal when failed
@@ -411,7 +411,7 @@ function Meeting() {
       }
       if (subscribe) {
         await subscribe.leave();
-        // showMessage("You have successfully left the room", "error");   
+        
         // console.log("You have successfully left the room");
       }
       if (connector) {
@@ -428,7 +428,7 @@ function Meeting() {
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = null;
       }
-
+      showMessage("Meeting", "You have successfully left the room", "success");   
       navigate("/home");
       // if (mountedRef.current) {
       //   navigate("/");
