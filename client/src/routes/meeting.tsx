@@ -8,11 +8,12 @@ import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Displ
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
+import { ChatNotification, ChatNotificationContainer } from "../components/ChatNotification";
 
 // Error handle - notify modal when failed
 import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
 // Chat Service
-import { ChatService, useChat } from "../usecase/chat";
+import { ChatMessage, ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAuth } from "../store/AuthContext";
 import { useNotify } from "../store/NotifyContext";
@@ -79,7 +80,6 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
   );
 };
 
-
 function Meeting() {
   const { URI } = useParams();
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ function Meeting() {
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  
+
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
@@ -107,12 +107,15 @@ function Meeting() {
   // Example: new member joined or error when setting device
   const { showMessage } = useNotify();
 
-
+  // Chat service
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
 
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
+
+  const [notifications, setNotifications] = useState<Array<{ id: number; user: string; message: string }>>([]);
+  const notificationCounterRef = useRef(0);
 
   const initializeDevice = async () => {
     try {
@@ -182,7 +185,6 @@ function Meeting() {
   };
   const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
 
-
   useEffect(() => {
     return () => {
       if (publish?.localStream) {
@@ -197,7 +199,6 @@ function Meeting() {
       // mountedRef.current = false;
     };
   }, []);
-
 
   useEffect(() => {
     async function initializeSocket() {
@@ -290,7 +291,23 @@ function Meeting() {
     };
   }, [URI]);
 
+  useEffect(() => {
+    if (chatService) {
+      const handleMessage = (message: ChatMessage) => {
+        if (message.senderName !== username) {
+          const id = notificationCounterRef.current++;
+          setNotifications(prev => [...prev, {
+            id,
+            user: message.senderName,
+            message: message.content
+          }]);
+        }
+      };
 
+      chatService.addMessageListener(handleMessage);
+      return () => chatService.removeMessageListener(handleMessage);
+    }
+  }, [chatService, username]);
 
   useEffect(() => {
     const initializePublish = async () => {
@@ -306,7 +323,7 @@ function Meeting() {
           // await publish.publish(cameraOn, micOn)
           if (cameraOn) {
             await publish.startPublishingVideo();
-          } 
+          }
 
           if (micOn) {
             await publish.startPublishingAudio();
@@ -328,7 +345,7 @@ function Meeting() {
               // ... handle other cases
             }
           }
-        } 
+        }
       }
     };
 
@@ -347,7 +364,6 @@ function Meeting() {
     }
 
   }, [subReady]);
-
 
   const handleJoinRequestResponse = (socketId: string, approved: boolean) => {
     connector.socket.emit('join:response', { socketId, approved });
@@ -419,6 +435,10 @@ function Meeting() {
     setViewParticipantsShow(true);
   };
 
+  const removeNotification = (id: number) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
@@ -433,7 +453,6 @@ function Meeting() {
       </Container>
     );
   }
-
 
   return (
     <Container fluid className="vh-100 d-flex flex-column" style={{ backgroundColor: "#1C1F2E" }}>
@@ -518,7 +537,6 @@ function Meeting() {
         </Col>
       </Row>
 
-
       {/* Chat panel */}
       <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
@@ -531,16 +549,12 @@ function Meeting() {
       </Offcanvas>
 
       {/* Chat panel */}
-      {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
-      <Offcanvas 
-        show={viewMessagesShow} 
-        onHide={() => setViewMessagesShow(false)} 
+      <Offcanvas
+        show={viewMessagesShow}
+        onHide={() => setViewMessagesShow(false)}
         placement="end"
         style={{ backgroundColor: '#1F2335' }}
       >
-        {/* <Offcanvas.Header style={{ backgroundColor: '#161929', borderBottom: 'none' }}>
-          <Offcanvas.Title style={{ color: 'white' }}>Chat</Offcanvas.Title>
-        </Offcanvas.Header> */}
         <Offcanvas.Body className="p-0">
           {chatService && (
             <ChatPanel
@@ -571,7 +585,18 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      
+      <ChatNotificationContainer>
+        {notifications.map(notification => (
+          <ChatNotification
+            key={notification.id}
+            user={notification.user}
+            message={notification.message}
+            onClose={() => removeNotification(notification.id)}
+            onClick={() => setViewMessagesShow(true)}
+          />
+        ))}
+      </ChatNotificationContainer>
+
     </Container >
   );
 };
