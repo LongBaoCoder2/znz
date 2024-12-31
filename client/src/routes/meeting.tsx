@@ -166,7 +166,8 @@ function Meeting() {
     if (micOn) {
       publish?.pauseProducer("audio");
       setMicOn(false);
-      editVideoAudio('audioOff');
+      editVideoAudio("audioOff");
+      showMessage("Micro", "Micro off", "error");
     } else {
       try {
         if (!publish?.isPublishingAudio) {
@@ -178,6 +179,8 @@ function Meeting() {
         console.log(localVideoRef.current);
         setMicOn(true);
         editVideoAudio('audioOn');
+        showMessage("Micro", "Mic on", "success");
+
       } catch (error) {
         showMessage("Audio error", `Error starting audio: ${error}`, 'error');
         setMicOn(false);
@@ -190,6 +193,8 @@ function Meeting() {
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
+      showMessage("Camera", "Camera off", "error");
+
     } else {
       try {
         if (!publish?.isPublishingVideo) {
@@ -201,13 +206,24 @@ function Meeting() {
         console.log(localVideoRef.current);
         setCameraOn(true);
         editVideoAudio('videoOn');
+        showMessage("Camera", "Camera on", "success");    
       } catch (error) {
         showMessage("Video error", `Error starting video: ${error}`, 'error');
         setCameraOn(false);
       }
     }
   };
-  const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
+
+  const handleScreenSharingToggle = () => {
+    setScreenSharing((prev) => !prev);
+    if(!screenSharing) {
+      showMessage("Screen", "Screen Sharing", "success");
+    }
+    else {
+      showMessage("Screen", "Stop Sharing", "error");
+    }
+  }
+
 
   useEffect(() => {
     return () => {
@@ -281,6 +297,7 @@ function Meeting() {
           if (connector.role === 'host') {
             await initializeDevice();
           }
+          showMessage("Meeting", "Meeting joined successfully", "success");
         } catch (error) {
 
           // Error handle - notify modal when failed
@@ -427,6 +444,8 @@ function Meeting() {
       }
       if (subscribe) {
         await subscribe.leave();
+        
+        // console.log("You have successfully left the room");
       }
       if (connector) {
         connector.disconnect();
@@ -442,7 +461,7 @@ function Meeting() {
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = null;
       }
-
+      showMessage("Meeting", "You have successfully left the room", "success");   
       navigate("/home");
       // if (mountedRef.current) {
       //   navigate("/");

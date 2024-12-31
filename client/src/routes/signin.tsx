@@ -7,10 +7,13 @@ import getURL from "../axios/network";
 import { SignInResponse, SignUpResponse } from "../axios/interface";
 import { useAuth } from "../store/AuthContext";
 import Loading from "../components/Loading";
+import { useNotify } from "../store/NotifyContext";
 
 function SignIn() {
   let navigate = useNavigate();
-  const { loading, login, setHasJustRegistered } = useAuth();
+
+  const { showMessage } = useNotify();
+  const { loading, isAuthenticated, login } = useAuth();
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -41,6 +44,7 @@ function SignIn() {
       });
       console.log(response);
       login(response.data);
+      showMessage("Login", "Login successful", "success");
       navigate("/home");
     }
     catch (error) {
