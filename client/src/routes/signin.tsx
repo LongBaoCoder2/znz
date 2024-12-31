@@ -10,7 +10,7 @@ import Loading from "../components/Loading";
 
 function SignIn() {
   let navigate = useNavigate();
-  const { loading, isAuthenticated, login } = useAuth();
+  const { loading, login } = useAuth();
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -80,11 +80,11 @@ function SignIn() {
       });
       console.log(response);
       if (response.status === 201) {
-        const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
-          username: signUpUsername,
-          password: signUpPassword,
-        });
-        login(response.data);
+        // const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
+        //   username: signUpUsername,
+        //   password: signUpPassword,
+        // });
+        // login(response.data);
         navigate("/signup");
       }
     }
