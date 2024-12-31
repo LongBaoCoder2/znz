@@ -136,6 +136,9 @@ function Meeting() {
 
   const [isUserReady, setIsUserReady] = useState(false);
 
+  const [showShareButtons, setShowShareButtons] = useState(false);
+  const [isCopiedUri, setIsCopiedUri] = useState(false);
+
   const initializeDevice = async () => {
     try {
       const routerRtpCapabilities = await connector.sendRequest('getRouterRtpCapabilities', {});
@@ -463,6 +466,10 @@ function Meeting() {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
+  const handleCopyToClipboard = (text: string) => {
+    return navigator.clipboard.writeText(text);
+  };
+
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
@@ -551,11 +558,32 @@ function Meeting() {
         <Col className="col-2 offset-1">
           <OverlayTrigger trigger="click" placement="top" overlay={
             <Popover>
-              <Popover.Header as="h3">Popover right</Popover.Header>
+              <Popover.Header as="h3">Meeting information</Popover.Header>
               <Popover.Body>
-                And here's some <strong>amazing</strong> content. It's very engaging.
-                right?
+                <p><strong>URI:</strong> {URI}</p>
               </Popover.Body>
+              <div className="d-flex gap-1">
+                <Button
+                  variant="secondary"
+                  className="w-100"
+                  onClick={() => setShowShareButtons(!showShareButtons)}
+                >
+                  Chia sẻ với bạn bè
+                </Button>
+              </div>
+              {showShareButtons && (
+                <div className="mt-2 d-flex flex-column gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      handleCopyToClipboard(URI || '')
+                        .then(() => setIsCopiedUri(true));
+                    }}
+                  >
+                    {isCopiedUri ? "Đã sao chép URI" : "Sao chép URI"}
+                  </Button>
+                </div>
+              )}
             </Popover>
           }>
             <Button
@@ -568,6 +596,7 @@ function Meeting() {
             </Button>
           </OverlayTrigger>
         </Col>
+
         <Col className="col-2 offset-1 d-flex justify-content-between">
           <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: micOn ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleMicToggle}>
             {micOn ? <MicFill size={20} /> : <MicMuteFill size={20} />}
@@ -587,12 +616,13 @@ function Meeting() {
             {spotlight ? <Grid1x2 size={20} /> : <LayoutSidebarReverse size={20} />}
           </Button>
         </Col>
-        <Col className="col-2 d-flex ps-5">
 
+        <Col className="col-2 d-flex ps-5">
           <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
           </Button>
         </Col>
+        
         <Col className="col-3 offset-1 d-flex justify-content-evenly">
           <Button
             variant="primary"

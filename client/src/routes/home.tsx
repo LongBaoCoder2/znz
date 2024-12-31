@@ -231,6 +231,7 @@ function Home() {
         }
       );
       if (response.status === 200) {
+        
         console.log("change password successfully");
         setChangePasswordModalShow(false);
       }
