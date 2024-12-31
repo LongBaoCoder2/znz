@@ -1,28 +1,19 @@
-import { Container, Row, Col, Button, Image, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
-import addParticipantImage from "../assets/add-participant.svg";
-import microphoneOffImage from "../assets/microphone-off.svg";
-import microphoneOnImage from "../assets/microphone-on.svg";
-import cameraOffImage from "../assets/camera-off.svg";
-import cameraOnImage from "../assets/camera-on.svg";
-import shareScreenOffImage from "../assets/share-screen-off.svg";
-import shareScreenOnImage from "../assets/share-screen-on.svg";
-import endCallImage from "../assets/end-call.svg";
-import viewMessagesImage from "../assets/view-messages.svg";
-import viewParticipantsImage from "../assets/view-participants.svg";
+import { Container, Row, Col, Button, Card, OverlayTrigger, Popover, Offcanvas, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { Connector, Publish, Subscribe, MediasoupDevice } from "../usecase/mediasoup";
 import { Device } from "mediasoup-client";
 import { JoinRequest, Participant } from "../interface/Participant";
-import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots, Chat } from "react-bootstrap-icons";
+import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots } from "react-bootstrap-icons";
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
+import { ChatNotification, ChatNotificationContainer } from "../components/ChatNotification";
 
 // Error handle - notify modal when failed
 import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
 // Chat Service
-import { ChatService, useChat } from "../usecase/chat";
+import { ChatMessage, ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAuth } from "../store/AuthContext";
 import { useNotify } from "../store/NotifyContext";
@@ -32,6 +23,7 @@ let publish: Publish | null = null;
 let subscribe: Subscribe;
 let device: MediasoupDevice;
 export let chatService: ChatService;
+const title = "ZNZ";
 
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -88,7 +80,6 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
   );
 };
 
-
 function Meeting() {
   const { URI } = useParams();
   const navigate = useNavigate();
@@ -102,7 +93,7 @@ function Meeting() {
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  
+
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
@@ -116,13 +107,15 @@ function Meeting() {
   // Example: new member joined or error when setting device
   const { showMessage } = useNotify();
 
-
+  // Chat service
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
 
-  const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
+
+  const [notifications, setNotifications] = useState<Array<{ id: number; user: string; message: string }>>([]);
+  const notificationCounterRef = useRef(0);
 
   const initializeDevice = async () => {
     try {
@@ -196,6 +189,7 @@ function Meeting() {
       }
     }
   };
+
   const handleScreenSharingToggle = () => {
     setScreenSharing((prev) => !prev);
     if(!screenSharing) {
@@ -205,6 +199,7 @@ function Meeting() {
       showMessage("Screen", "Stop Sharing", "error");
     }
   }
+
 
   useEffect(() => {
     return () => {
@@ -220,7 +215,6 @@ function Meeting() {
       // mountedRef.current = false;
     };
   }, []);
-
 
   useEffect(() => {
     async function initializeSocket() {
@@ -314,7 +308,23 @@ function Meeting() {
     };
   }, [URI]);
 
+  useEffect(() => {
+    if (chatService) {
+      const handleMessage = (message: ChatMessage) => {
+        if (message.senderName !== username) {
+          const id = notificationCounterRef.current++;
+          setNotifications(prev => [...prev, {
+            id,
+            user: message.senderName,
+            message: message.content
+          }]);
+        }
+      };
 
+      chatService.addMessageListener(handleMessage);
+      return () => chatService.removeMessageListener(handleMessage);
+    }
+  }, [chatService, username]);
 
   useEffect(() => {
     const initializePublish = async () => {
@@ -330,7 +340,7 @@ function Meeting() {
           // await publish.publish(cameraOn, micOn)
           if (cameraOn) {
             await publish.startPublishingVideo();
-          } 
+          }
 
           if (micOn) {
             await publish.startPublishingAudio();
@@ -352,7 +362,7 @@ function Meeting() {
               // ... handle other cases
             }
           }
-        } 
+        }
       }
     };
 
@@ -371,7 +381,6 @@ function Meeting() {
     }
 
   }, [subReady]);
-
 
   const handleJoinRequestResponse = (socketId: string, approved: boolean) => {
     connector.socket.emit('join:response', { socketId, approved });
@@ -445,6 +454,10 @@ function Meeting() {
     setViewParticipantsShow(true);
   };
 
+  const removeNotification = (id: number) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
@@ -459,7 +472,6 @@ function Meeting() {
       </Container>
     );
   }
-
 
   return (
     <Container fluid className="vh-100 d-flex flex-column" style={{ backgroundColor: "#1C1F2E" }}>
@@ -522,12 +534,6 @@ function Meeting() {
           </Button>
         </Col>
         <Col className="col-2 d-flex ps-5">
-          {/* <Image
-            src={endCallImage}
-            className="w-100"
-            style={{ cursor: "pointer" }}
-            onClick={handleEndCallClick}
-          /> */}
 
           <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
@@ -550,7 +556,6 @@ function Meeting() {
         </Col>
       </Row>
 
-
       {/* Chat panel */}
       <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
@@ -563,12 +568,13 @@ function Meeting() {
       </Offcanvas>
 
       {/* Chat panel */}
-      {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
-      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Chat</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
+      <Offcanvas
+        show={viewMessagesShow}
+        onHide={() => setViewMessagesShow(false)}
+        placement="end"
+        style={{ backgroundColor: '#1F2335' }}
+      >
+        <Offcanvas.Body className="p-0">
           {chatService && (
             <ChatPanel
               messages={messages}
@@ -598,7 +604,18 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      
+      <ChatNotificationContainer>
+        {notifications.map(notification => (
+          <ChatNotification
+            key={notification.id}
+            user={notification.user}
+            message={notification.message}
+            onClose={() => removeNotification(notification.id)}
+            onClick={() => setViewMessagesShow(true)}
+          />
+        ))}
+      </ChatNotificationContainer>
+
     </Container >
   );
 };

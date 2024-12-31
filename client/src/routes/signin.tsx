@@ -11,6 +11,7 @@ import { useNotify } from "../store/NotifyContext";
 
 function SignIn() {
   let navigate = useNavigate();
+
   const { showMessage } = useNotify();
   const { loading, isAuthenticated, login } = useAuth();
 
@@ -83,11 +84,12 @@ function SignIn() {
       });
       console.log(response);
       if (response.status === 201) {
-        const response = await axios.post<SignInResponse>(getURL("/auth/login"), {
+        const loginResponse = await axios.post<SignInResponse>(getURL("/auth/login"), {
           username: signUpUsername,
           password: signUpPassword,
         });
-        login(response.data);
+        setHasJustRegistered(true);
+        login(loginResponse.data);
         navigate("/signup");
       }
     }

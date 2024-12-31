@@ -16,14 +16,12 @@ const authMiddleware = async (
     const Authorization = req.header('Authorization')?.split('Bearer ')[1] || req.cookies['Authorization'] || null;
     sfuLogger.info(`Authorization: ${Authorization}`);
 
-    if (Authorization !== null) {
-      sfuLogger.info(`getInAuth`);
+    if (Authorization) {
       const secretKey: string = process.env.SECRET_KEY || "secret";
       const verificationResponse = jwt.verify(Authorization, secretKey) as DataStoredInToken;
       const userId = verificationResponse._id;
-      sfuLogger.info(`userId: ${userId}`);
       const findUser = await getUserById(userId);
-      sfuLogger.info(`findUser: ${findUser}`);
+      sfuLogger.info(`findUser: ${JSON.stringify(findUser)}`);
 
 
       if (findUser) {
