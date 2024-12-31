@@ -48,9 +48,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ messages, onSendMessage, c
       </div>
 
       {/* Messages Container */}
-      <div className="flex-grow-1 overflow-auto px-3 py-2" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+      <div className="flex-grow-1 overflow-auto px-3 py-4" style={{ maxHeight: 'calc(100vh - 140px)' }}>
         {messages.map((msg) => (
-          <div key={msg.id} className="d-flex mb-3 align-items-center">
+          <div key={msg.id} className="d-flex mb-2 align-items-center">
             <PersonCircle size={35} className="me-2" color="white" />
             <div className="d-flex align-items-center" style={{ flex: 1 }}>
               <div 
