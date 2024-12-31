@@ -8,11 +8,12 @@ import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Displ
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
+import { ChatNotification, ChatNotificationContainer } from "../components/ChatNotification";
 
 // Error handle - notify modal when failed
 import { MediasoupError, MediasoupErrorKind } from "../usecase/mediasoup/error";
 // Chat Service
-import { ChatService, useChat } from "../usecase/chat";
+import { ChatMessage, ChatService, useChat } from "../usecase/chat";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAuth } from "../store/AuthContext";
 import { useNotify } from "../store/NotifyContext";
@@ -22,6 +23,7 @@ let publish: Publish | null = null;
 let subscribe: Subscribe;
 let device: MediasoupDevice;
 export let chatService: ChatService;
+const title = "ZNZ";
 
 interface MyCardProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -94,12 +96,12 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
   );
 };
 
-
 function Meeting() {
   const { URI } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [username, setUsername] = useState("Participant");
+  const [spotlight, setSpotlight] = useState(true);
 
   // const mountedRef = useRef(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -122,15 +124,15 @@ function Meeting() {
   // Example: new member joined or error when setting device
   const { showMessage } = useNotify();
 
-
+  // Chat service
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
 
-  const [spotlight, setSpotlight] = useState(true);
-
-  const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
   const [viewMessagesShow, setViewMessagesShow] = useState(false);
+
+  const [notifications, setNotifications] = useState<Array<{ id: number; user: string; message: string; }>>([]);
+  const notificationCounterRef = useRef(0);
 
   const initializeDevice = async () => {
     try {
@@ -145,7 +147,7 @@ function Meeting() {
   };
 
   const notifyNewParticipant = (username: string) => {
-    showMessage(`${username} has joined the room`, 'success');
+    showMessage("Member join", `${username} has joined the room`, 'success');
   };
 
   useEffect(() => {
@@ -176,7 +178,7 @@ function Meeting() {
         setMicOn(true);
         editVideoAudio('audioOn');
       } catch (error) {
-        showMessage(`Error starting audio: ${error}`, 'error');
+        showMessage("Audio error", `Error starting audio: ${error}`, 'error');
         setMicOn(false);
       }
     }
@@ -199,13 +201,12 @@ function Meeting() {
         setCameraOn(true);
         editVideoAudio('videoOn');
       } catch (error) {
-        showMessage(`Error starting video: ${error}`, 'error');
+        showMessage("Video error", `Error starting video: ${error}`, 'error');
         setCameraOn(false);
       }
     }
   };
   const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
-
 
   useEffect(() => {
     return () => {
@@ -221,7 +222,6 @@ function Meeting() {
       // mountedRef.current = false;
     };
   }, []);
-
 
   useEffect(() => {
     async function initializeSocket() {
@@ -288,16 +288,16 @@ function Meeting() {
               case MediasoupErrorKind.ROOM_NOT_FOUND:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Room error", error.message, 'error');
 
-                //navigate("/");
+                navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Room error", error.message, 'error');
 
-                //navigate("/");
+                navigate("/");
                 break;
               // ... handle other cases
             }
@@ -314,7 +314,23 @@ function Meeting() {
     };
   }, [URI]);
 
+  useEffect(() => {
+    if (chatService) {
+      const handleMessage = (message: ChatMessage) => {
+        if (message.senderName !== username) {
+          const id = notificationCounterRef.current++;
+          setNotifications(prev => [...prev, {
+            id,
+            user: message.senderName,
+            message: message.content
+          }]);
+        }
+      };
 
+      chatService.addMessageListener(handleMessage);
+      return () => chatService.removeMessageListener(handleMessage);
+    }
+  }, [chatService, username]);
 
   useEffect(() => {
     const initializePublish = async () => {
@@ -344,7 +360,7 @@ function Meeting() {
               case MediasoupErrorKind.DeviceLoadFailed:
                 setCameraOn(false);
                 setMicOn(false);
-                showMessage(error.message, 'error');
+                showMessage("Device error", error.message, 'error');
                 break;
               case MediasoupErrorKind.RtpCapabilitiesFailed:
                 // Handle RTP capabilities failure
@@ -371,7 +387,6 @@ function Meeting() {
     }
 
   }, [subReady]);
-
 
   const handleJoinRequestResponse = (socketId: string, approved: boolean) => {
     connector.socket.emit('join:response', { socketId, approved });
@@ -443,6 +458,10 @@ function Meeting() {
     setViewParticipantsShow(!viewParticipantsShow);
   };
 
+  const removeNotification = (id: number) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
@@ -457,7 +476,6 @@ function Meeting() {
       </Container>
     );
   }
-
 
   return (
     <Container fluid className="vh-100 d-flex flex-column" style={{ backgroundColor: "#1C1F2E" }}>
@@ -515,20 +533,15 @@ function Meeting() {
         )}
 
         {viewMessagesShow && (
-          <Col className="col-3 h-100 text-light p-3" style={{ backgroundColor: "#1F2335" }}>
-            <h5 className="mb-3">
-              Participants
-            </h5>
-            <span className="my-4 d-flex align-items-center">
-              <PersonCircle size={24} className="ms-3 me-4" />
-              {username} (You)
-            </span>
-            {participants.map((participant: Participant) => (
-              <span className="my-4 d-flex align-items-center">
-                <PersonCircle size={24} className="ms-3 me-4" />
-                {participant.username}
-              </span>
-            ))}
+          <Col className="col-3 h-100 p-0" style={{ backgroundColor: "#1F2335" }}>
+            {chatService && (
+              <ChatPanel
+                messages={messages}
+                onSendMessage={sendMessage}
+                currentUserId={connector?.socket.id || ''}
+              />
+            )}
+
           </Col>
         )}
       </Row>
@@ -574,12 +587,6 @@ function Meeting() {
           </Button>
         </Col>
         <Col className="col-2 d-flex ps-5">
-          {/* <Image
-            src={endCallImage}
-            className="w-100"
-            style={{ cursor: "pointer" }}
-            onClick={handleEndCallClick}
-          /> */}
 
           <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
@@ -610,7 +617,6 @@ function Meeting() {
         </Col>
       </Row>
 
-
       {/* Chat panel */}
       <Offcanvas show={false} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
@@ -619,23 +625,6 @@ function Meeting() {
         <Offcanvas.Body>
           Some text as placeholder. In real life you can have the elements you
           have chosen. Like, text, images, lists, etc.
-        </Offcanvas.Body>
-      </Offcanvas>
-
-      {/* Chat panel */}
-      {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
-      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Chat</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          {chatService && (
-            <ChatPanel
-              messages={messages}
-              onSendMessage={sendMessage}
-              currentUserId={connector?.socket.id || ''}
-            />
-          )}
         </Offcanvas.Body>
       </Offcanvas>
 
@@ -658,6 +647,17 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
+      <ChatNotificationContainer>
+        {notifications.map(notification => (
+          <ChatNotification
+            key={notification.id}
+            user={notification.user}
+            message={notification.message}
+            onClose={() => removeNotification(notification.id)}
+            onClick={() => setViewMessagesShow(true)}
+          />
+        ))}
+      </ChatNotificationContainer>
 
     </Container >
   );

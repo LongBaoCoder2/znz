@@ -10,9 +10,10 @@ import { AuthProvider } from "./store/AuthContext";
 import { NotifyProvider } from "./store/NotifyContext";
 import MessageModalContainer from "./components/MessageModal";
 import { useNotify } from "./store/NotifyContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Root() {
-  const { hideMessage, isVisible, message, type } = useNotify();
+  const { hideMessage, isVisible, message, type, title } = useNotify();
 
   return (
     <>
@@ -21,14 +22,41 @@ function Root() {
         message={message}
         isVisible={isVisible}
         hideMessage={hideMessage}
+        title={title}
       />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/meeting/:URI" element={<Meeting />} />
+          <Route 
+            path="/signin" 
+            element={
+              <ProtectedRoute requireUnauth redirectPath="/home">
+                <SignIn />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <ProtectedRoute requireUnauth redirectPath="/home">
+                <SignUp />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/home" 
+            element={
+              <ProtectedRoute requireAuth redirectPath="/signin">
+                <Home />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/meeting/:URI" 
+            element={
+                <Meeting />
+            } 
+          />
         </Routes>
       </BrowserRouter>
     </>
@@ -39,7 +67,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
       <NotifyProvider>
-        <Root />
+          <Root />
       </NotifyProvider>
     </AuthProvider>
   </StrictMode>
