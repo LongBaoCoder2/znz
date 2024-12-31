@@ -496,12 +496,6 @@ function Meeting() {
           </Button>
         </Col>
         <Col className="col-2 d-flex ps-5">
-          {/* <Image
-            src={endCallImage}
-            className="w-100"
-            style={{ cursor: "pointer" }}
-            onClick={handleEndCallClick}
-          /> */}
 
           <Button className="fw-medium" disabled={isDisconnecting} onClick={handleEndCallClick} style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#FF4949", borderRadius: "50px", border: 0 }}>
             {isDisconnecting ? 'Ending Call...' : 'End Call'}
@@ -538,11 +532,16 @@ function Meeting() {
 
       {/* Chat panel */}
       {/* <Offcanvas show={showChat} onHide={() => setShowChat(false)} placement="end"> */}
-      <Offcanvas show={viewMessagesShow} onHide={() => setViewMessagesShow(false)} placement="end">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Chat</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
+      <Offcanvas 
+        show={viewMessagesShow} 
+        onHide={() => setViewMessagesShow(false)} 
+        placement="end"
+        style={{ backgroundColor: '#1F2335' }}
+      >
+        {/* <Offcanvas.Header style={{ backgroundColor: '#161929', borderBottom: 'none' }}>
+          <Offcanvas.Title style={{ color: 'white' }}>Chat</Offcanvas.Title>
+        </Offcanvas.Header> */}
+        <Offcanvas.Body className="p-0">
           {chatService && (
             <ChatPanel
               messages={messages}

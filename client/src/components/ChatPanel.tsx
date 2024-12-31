@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Form, Button, Card } from 'react-bootstrap';
+import { Container, Form } from 'react-bootstrap';
 import { ChatMessage } from '../usecase/chat/types';
+import { PersonCircle, ChatDots, Paperclip, Send } from 'react-bootstrap-icons';
 
 interface ChatPanelProps {
   messages: ChatMessage[];
@@ -30,50 +31,100 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ messages, onSendMessage, c
     }
   };
 
+  const formatTime = (timestamp: Date) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   return (
-    <Container className="p-0 h-100 d-flex flex-column">
-      <div className="flex-grow-1 overflow-auto mb-3" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+    <Container className="d-flex flex-column h-100 p-0" style={{ backgroundColor: '#1F2335' }}>
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center px-3 py-2" style={{ backgroundColor: '#161929' }}>
+        <span className="fw-medium fs-5 text-white">Chats</span>
+        <ChatDots size={24} color="white" />
+      </div>
+
+      {/* Messages Container */}
+      <div className="flex-grow-1 overflow-auto px-3 py-2" style={{ maxHeight: 'calc(100vh - 140px)' }}>
         {messages.map((msg) => (
-          <Card 
-            key={msg.id}
-            className={`mb-2 ${msg.senderId === currentUserId ? 'ms-auto' : 'me-auto'}`}
-            style={{ maxWidth: '75%', backgroundColor: msg.senderId === currentUserId ? '#007bff' : '#f8f9fa' }}
-          >
-            <Card.Body className="p-2">
-              <div className="d-flex flex-column">
-                <small className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>
+          <div key={msg.id} className="d-flex mb-3 align-items-center">
+            <PersonCircle size={35} className="me-2" color="white" />
+            <div className="d-flex align-items-center" style={{ flex: 1 }}>
+              <div 
+                className="py-2 px-3 m-1" 
+                style={{ 
+                  backgroundColor: '#161929',
+                  color: 'white',
+                  flex: 1,
+                  borderRadius: '16px'
+                }}
+              >
+                <div className="mb-1" style={{ fontSize: '10px', color: '#6c757d' }}>
                   {msg.senderId === currentUserId ? 'You' : msg.senderName}
-                </small>
-                <div style={{ 
-                  color: msg.senderId === currentUserId ? 'white' : 'black',
-                  wordBreak: 'break-word'
-                }}>
+                </div>
+                <div style={{ wordBreak: 'break-word', fontSize: '15px' }}>
                   {msg.content}
                 </div>
-                <small className="text-muted mt-1 align-self-end" style={{ fontSize: '0.7rem' }}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </small>
               </div>
-            </Card.Body>
-          </Card>
+              <span className="ms-2" style={{ fontSize: '10px', color: '#6c757d' }}>
+                {formatTime(msg.timestamp)}
+              </span>
+            </div>
+          </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      
-      <Form onSubmit={handleSubmit} className="mt-auto">
-        <div className="d-flex">
-          <Form.Control
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="me-2"
-          />
-          <Button type="submit" disabled={!newMessage.trim()}>
-            Send
-          </Button>
-        </div>
-      </Form>
+
+      {/* Message Input */}
+      <div className="p-3">
+        <Form onSubmit={handleSubmit}>
+          <div 
+            className="d-flex align-items-center" 
+            style={{ 
+              backgroundColor: '#1C1F2E',
+              borderRadius: '30px',
+              padding: '6px 8px 6px 16px'
+            }}
+          >
+            <Paperclip 
+              size={24} 
+              color="#6c757d" 
+              // className="me-3" 
+              style={{ cursor: 'pointer' }} 
+            />
+            <Form.Control
+              type="text"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              className="border-0 bg-transparent text-white"
+              style={{ 
+                boxShadow: 'none',
+                fontSize: '16px',
+              }}
+            />
+            <div 
+              onClick={handleSubmit}
+              style={{ 
+                cursor: 'pointer',
+                backgroundColor: '#1A71FF',
+                minWidth: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                // marginLeft: '16px'
+              }}
+            >
+              <Send size={18} color="white" />
+            </div>
+          </div>
+        </Form>
+      </div>
     </Container>
   );
 };
