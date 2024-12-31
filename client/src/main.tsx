@@ -12,7 +12,7 @@ import MessageModalContainer from "./components/MessageModal";
 import { useNotify } from "./store/NotifyContext";
 
 function Root() {
-  const { hideMessage, isVisible, message, type } = useNotify();
+  const { hideMessage, isVisible, message, type, title } = useNotify();
 
   return (
     <>
@@ -21,6 +21,7 @@ function Root() {
         message={message}
         isVisible={isVisible}
         hideMessage={hideMessage}
+        title={title}
       />
       <BrowserRouter>
         <Routes>
