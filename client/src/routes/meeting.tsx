@@ -1,20 +1,10 @@
-import { Container, Row, Col, Button, Image, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
-import addParticipantImage from "../assets/add-participant.svg";
-import microphoneOffImage from "../assets/microphone-off.svg";
-import microphoneOnImage from "../assets/microphone-on.svg";
-import cameraOffImage from "../assets/camera-off.svg";
-import cameraOnImage from "../assets/camera-on.svg";
-import shareScreenOffImage from "../assets/share-screen-off.svg";
-import shareScreenOnImage from "../assets/share-screen-on.svg";
-import endCallImage from "../assets/end-call.svg";
-import viewMessagesImage from "../assets/view-messages.svg";
-import viewParticipantsImage from "../assets/view-participants.svg";
+import { Container, Row, Col, Button, Card, OverlayTrigger, Popover, Offcanvas, Modal, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { Connector, Publish, Subscribe, MediasoupDevice } from "../usecase/mediasoup";
 import { Device } from "mediasoup-client";
 import { JoinRequest, Participant } from "../interface/Participant";
-import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots, Chat } from "react-bootstrap-icons";
+import { PersonFillAdd, MicFill, MicMuteFill, CameraVideo, CameraVideoOff, Display, Cast, PersonFill, PeopleFill, ChatDots, Chat, PersonCircle, Grid1x2, LayoutSidebarReverse } from "react-bootstrap-icons";
 import UserCard from "../components/UserCard";
 import JoinRequestsModal from "../components/JoinRequestsModal";
 import WaitingApprovalModal from "../components/WaitingApprovalModal";
@@ -48,10 +38,18 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
   }, [videoRef, cameraOn]);
 
   return (
-    <Card className="position-relative h-100" style={{
-      backgroundColor: "#1E2757",
+    // <Card className="h-100" style={{
+    //   backgroundColor: "#1E2757",
+    //   border: "none",
+    //   maxHeight: "100%",
+    // }}>
+    <Card style={{
+      height: "100%",
+      aspectRatio: "16/9",
+      objectFit: "cover",
       border: "none",
-      maxHeight: "calc(90vh - 2rem)"
+      minHeight: "80vh",
+      backgroundColor: "#1E2757",
     }}>
       {cameraOn ? (
         <video
@@ -59,20 +57,25 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
           autoPlay
           playsInline
           style={{
-            width: "100%",
             height: "100%",
+            aspectRatio: "16/9",
             objectFit: "cover",
+            overflow: "hidden",
             borderRadius: "0.5rem"
           }}
           muted
         />
       ) : (
-        <div className="d-flex justify-content-center align-items-center h-100">
+        <div className="d-flex flex-fill justify-content-center align-items-center" style={{
+          height: "100%",
+          aspectRatio: "16/9",
+          objectFit: "cover",
+        }}>
           <PersonFill size={72} color="#6c757d" />
         </div>
       )}
 
-      <div className="position-absolute bottom-0 w-100 d-flex justify-content-between p-2"
+      <div className="position-absolute bottom-0 w-100 d-flex justify-content-between py-2 px-3"
         style={{
           background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
           borderBottomLeftRadius: "0.5rem",
@@ -85,6 +88,9 @@ const MyCard = ({ videoRef, username, micOn, cameraOn }: MyCardProps) => {
         }
       </div>
     </Card>
+
+
+    // </Card>
   );
 };
 
@@ -93,7 +99,7 @@ function Meeting() {
   const { URI } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const username = user?.displayName || "Participant";
+  const [username, setUsername] = useState("Participant");
 
   // const mountedRef = useRef(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -102,7 +108,7 @@ function Meeting() {
   const [deviceReady, setDeviceReady] = useState(false);
   const [subReady, setSubReady] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  
+
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
@@ -119,6 +125,8 @@ function Meeting() {
 
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const { messages, sendMessage } = useChat(chatService as any);
+
+  const [spotlight, setSpotlight] = useState(true);
 
   const [title, setTitle] = useState("ZNZ");
   const [viewParticipantsShow, setViewParticipantsShow] = useState(false);
@@ -143,6 +151,12 @@ function Meeting() {
   useEffect(() => {
     if (loading) return;
   }, [loading]);
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.displayName || "Participant");
+    }
+  }, [user]);
 
   // Handler functions
   const handleMicToggle = async () => {
@@ -276,14 +290,14 @@ function Meeting() {
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                navigate("/");
+                //navigate("/");
                 break;
               case MediasoupErrorKind.ROOM_IS_FULL:
                 setCameraOn(false);
                 setMicOn(false);
                 showMessage(error.message, 'error');
 
-                navigate("/");
+                //navigate("/");
                 break;
               // ... handle other cases
             }
@@ -316,7 +330,7 @@ function Meeting() {
           // await publish.publish(cameraOn, micOn)
           if (cameraOn) {
             await publish.startPublishingVideo();
-          } 
+          }
 
           if (micOn) {
             await publish.startPublishingAudio();
@@ -338,7 +352,7 @@ function Meeting() {
               // ... handle other cases
             }
           }
-        } 
+        }
       }
     };
 
@@ -426,7 +440,7 @@ function Meeting() {
   };
 
   const handleViewParticipantsClick = () => {
-    setViewParticipantsShow(true);
+    setViewParticipantsShow(!viewParticipantsShow);
   };
 
   if (loading) {
@@ -447,33 +461,79 @@ function Meeting() {
 
   return (
     <Container fluid className="vh-100 d-flex flex-column" style={{ backgroundColor: "#1C1F2E" }}>
-      <Row style={{ flex: 1 }} className="align-items-center ps-3">
-        <h4>
+      <Row style={{ flex: 1 }} className="align-items-center ps-3 bg-light">
+        <h4 className="text-primary">
           {URI} | {title}
         </h4>
       </Row>
 
-      <Row style={{ flex: 10 }} className="p-3">
-        <Col className="col-9">
-          <MyCard
-            videoRef={localVideoRef}
-            username={username}
-            micOn={micOn}
-            cameraOn={cameraOn}
-          />
-        </Col>
-
-        <Col className="h-100 p-2 col-3" style={{ overflowY: "auto" }}>
-          {participants.map((participant: Participant, index: number) => (
-            <UserCard
-              key={index}
-              participant={participant}
+      <Row style={{ flex: 10 }} className="d-flex justify-content-center align-items-center">
+        {spotlight ? (
+          <Col className="col-9 p-3 d-flex justify-content-center align-items-center">
+            <MyCard
+              videoRef={localVideoRef}
+              username={username}
+              micOn={micOn}
+              cameraOn={cameraOn}
             />
-          ))}
-        </Col>
+          </Col>
+        ) : (
+          <Col className="p-3 d-flex flex-row justify-content-around align-items-center">
+            <MyCard
+              videoRef={localVideoRef}
+              username={username}
+              micOn={micOn}
+              cameraOn={cameraOn}
+            />
+            <Col className="h-100 p-2 col-3 align-self-start" style={{ overflowY: "auto" }}>
+              {participants.map((participant: Participant, index: number) => (
+                <UserCard
+                  key={index}
+                  participant={participant}
+                />
+              ))}
+            </Col>
+          </Col>
+        )}
+
+        {viewParticipantsShow && (
+          <Col className="col-3 h-100 text-light p-3" style={{ backgroundColor: "#1F2335" }}>
+            <h5 className="mb-3">
+              Participants
+            </h5>
+            <span className="my-4 d-flex align-items-center">
+              <PersonCircle size={24} className="ms-3 me-4" />
+              {username} (You)
+            </span>
+            {participants.map((participant: Participant) => (
+              <span className="my-4 d-flex align-items-center">
+                <PersonCircle size={24} className="ms-3 me-4" />
+                {participant.username}
+              </span>
+            ))}
+          </Col>
+        )}
+
+        {viewMessagesShow && (
+          <Col className="col-3 h-100 text-light p-3" style={{ backgroundColor: "#1F2335" }}>
+            <h5 className="mb-3">
+              Participants
+            </h5>
+            <span className="my-4 d-flex align-items-center">
+              <PersonCircle size={24} className="ms-3 me-4" />
+              {username} (You)
+            </span>
+            {participants.map((participant: Participant) => (
+              <span className="my-4 d-flex align-items-center">
+                <PersonCircle size={24} className="ms-3 me-4" />
+                {participant.username}
+              </span>
+            ))}
+          </Col>
+        )}
       </Row>
 
-      <Row style={{ flex: 1, backgroundColor: "#161929" }} className="align-items-center pt-3 pb-3" >
+      <Row style={{ flex: 1, backgroundColor: "#161929" }} className="align-items-center py-2" >
         <Col className="col-2 offset-1">
           <OverlayTrigger trigger="click" placement="top" overlay={
             <Popover>
@@ -494,7 +554,7 @@ function Meeting() {
             </Button>
           </OverlayTrigger>
         </Col>
-        <Col className="col-2 offset-1 d-flex justify-content-around">
+        <Col className="col-2 offset-1 d-flex justify-content-between">
           <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: micOn ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleMicToggle}>
             {micOn ? <MicFill size={20} /> : <MicMuteFill size={20} />}
           </Button>
@@ -503,6 +563,14 @@ function Meeting() {
           </Button>
           <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: screenSharing ? "#1A71FF" : "#DA6565", display: "flex", justifyContent: "center", alignItems: "center", border: 0 }} onClick={handleScreenSharingToggle}>
             {screenSharing ? <Display size={20} /> : <Cast size={20} />}
+          </Button>
+          <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: "#1E2757", display: "flex", justifyContent: "center", alignItems: "center", color: "#1A71FF" }}
+            onClick={() => {
+              setViewMessagesShow(false);
+              setViewParticipantsShow(false);
+              setSpotlight(!spotlight);
+            }}>
+            {spotlight ? <Grid1x2 size={20} /> : <LayoutSidebarReverse size={20} />}
           </Button>
         </Col>
         <Col className="col-2 d-flex ps-5">
@@ -522,13 +590,21 @@ function Meeting() {
             variant="primary"
             className="d-flex justify-content-around align-items-center"
             style={{ height: "50px", width: "50%", cursor: "pointer", backgroundColor: "#1E2757", borderRadius: "50px" }}
-            onClick={handleViewParticipantsClick}
+            onClick={() => {
+              setViewMessagesShow(false);
+              setSpotlight(true);
+              setViewParticipantsShow(!viewParticipantsShow);
+            }}
           >
             <span className="fw-medium" style={{ color: "#1A71FF" }}>View Participants</span>
             <PeopleFill size={25} style={{ color: "#1A71FF" }} />
           </Button>
           <Button style={{ height: "50px", aspectRatio: 1, borderRadius: "50px", backgroundColor: "#1E2757", display: "flex", justifyContent: "center", alignItems: "center" }}
-            onClick={() => setViewMessagesShow(true)}>
+            onClick={() => {
+              setViewParticipantsShow(false);
+              setSpotlight(true);
+              setViewMessagesShow(!viewMessagesShow);
+            }}>
             <ChatDots size={20} style={{ color: "#1A71FF" }} />
           </Button>
         </Col>
@@ -536,7 +612,7 @@ function Meeting() {
 
 
       {/* Chat panel */}
-      <Offcanvas show={viewParticipantsShow} onHide={() => setViewParticipantsShow(false)} placement="end">
+      <Offcanvas show={false} onHide={() => setViewParticipantsShow(false)} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Participants</Offcanvas.Title>
         </Offcanvas.Header>
@@ -582,7 +658,7 @@ function Meeting() {
 
       <WaitingApprovalModal show={showWaitingModal} />
 
-      
+
     </Container >
   );
 };
