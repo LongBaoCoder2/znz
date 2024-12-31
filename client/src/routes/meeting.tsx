@@ -149,7 +149,8 @@ function Meeting() {
     if (micOn) {
       publish?.pauseProducer("audio");
       setMicOn(false);
-      editVideoAudio('audioOff');
+      editVideoAudio("audioOff");
+      showMessage("Mic off", "error");
     } else {
       try {
         if (!publish?.isPublishingAudio) {
@@ -161,6 +162,8 @@ function Meeting() {
         console.log(localVideoRef.current);
         setMicOn(true);
         editVideoAudio('audioOn');
+        showMessage("Mic on", "success");
+
       } catch (error) {
         showMessage(`Error starting audio: ${error}`, 'error');
         setMicOn(false);
@@ -173,6 +176,8 @@ function Meeting() {
       publish?.pauseProducer("video");
       setCameraOn(false);
       editVideoAudio('videoOff');
+      showMessage("Camera off", "error");
+
     } else {
       try {
         if (!publish?.isPublishingVideo) {
@@ -184,14 +189,22 @@ function Meeting() {
         console.log(localVideoRef.current);
         setCameraOn(true);
         editVideoAudio('videoOn');
+        showMessage("Camera on", "success");    
       } catch (error) {
         showMessage(`Error starting video: ${error}`, 'error');
         setCameraOn(false);
       }
     }
   };
-  const handleScreenSharingToggle = () => setScreenSharing((prev) => !prev);
-
+  const handleScreenSharingToggle = () => {
+    setScreenSharing((prev) => !prev);
+    if(!screenSharing) {
+      showMessage("Screen Sharing", "success");
+    }
+    else {
+      showMessage("Stop Sharing", "error");
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -266,6 +279,7 @@ function Meeting() {
           if (connector.role === 'host') {
             await initializeDevice();
           }
+          showMessage("Room joined successfully", "success");
         } catch (error) {
 
           // Error handle - notify modal when failed
@@ -397,6 +411,8 @@ function Meeting() {
       }
       if (subscribe) {
         await subscribe.leave();
+        // showMessage("You have successfully left the room", "error");   
+        // console.log("You have successfully left the room");
       }
       if (connector) {
         connector.disconnect();

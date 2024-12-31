@@ -8,10 +8,14 @@ import { GetProfileResponse, EditProfileResponse, JoinMeetingByIDResponse, Creat
 import { useAuth } from "../store/AuthContext";
 import { useNavigate } from "react-router";
 import { readFileSync } from "fs";
+import { useNotify } from "../store/NotifyContext";
 
 function Home() {
   const navigate = useNavigate();
+  const { showMessage } = useNotify();
   const { isAuthenticated, user, accessToken, loading, logout } = useAuth();
+
+  const [hasLoggedIn, setHasLoggedIn] = useState(false);
 
   const [avatar, setAvatar] = useState("");
   const [fullName, setFullName] = useState("");
@@ -63,7 +67,7 @@ function Home() {
         return;
       }
 
-      console.log("user: ", user);
+      console.log("user: ", user); 
 
       try {
         const response = await axios.get<GetProfileResponse>(getURL("/profile"), {
@@ -83,6 +87,12 @@ function Home() {
     };
     getProfile();
   }, [loading, isAuthenticated, user]);
+
+ useEffect(() => {
+   if (!hasLoggedIn) {
+     showMessage("Login successful", "success");
+   }
+ }, [hasLoggedIn]);
 
   const handleEditProfile = async () => {
     try {
@@ -108,6 +118,7 @@ function Home() {
         setDisplayName(editDisplayName);
         setEmail(editEmail);
         setPhoneNumber(editPhoneNumber);
+        showMessage("Edit successful", "success");
       }
       setEditProfileModalShow(false);
     } catch (error) {
@@ -189,6 +200,7 @@ function Home() {
       );
       if (response.status === 201) {
         console.log("host meeting success");
+        showMessage("Create meeting successful", "success");
         console.log(response);
         setCreatedRoomInfo({
           displayId: response.data.data.displayId,
@@ -209,6 +221,7 @@ function Home() {
     try {
       await logout();
       navigate('/signin');
+      showMessage("Logiut successful", "error");
     } catch (error) {
 
     }
