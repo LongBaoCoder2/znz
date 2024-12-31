@@ -59,11 +59,12 @@ function Home() {
 
   const [changePasswordModalShow, setChangePasswordModalShow] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
-  const [isCurrentPasswordValid, setIsCurrentPasswordValid] = useState(true);
+  const [isCurrentPasswordValid, setIsCurrentPasswordValid] = useState(false);
   const [newPassword, setNewPassword] = useState("");
-  const [isNewPasswordValid, setIsNewPasswordValid] = useState(true);
+  const [isNewPasswordValid, setIsNewPasswordValid] = useState(false);
   const [confirmedPassword, setConfirmedPassword] = useState("");
-  const [isConfirmedPasswordValid, setIsConfirmedPasswordValid] = useState(true);
+  const [isConfirmedPasswordValid, setIsConfirmedPasswordValid] = useState(false);
+  // const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
 
   const [signOutModalShow, setSignOutModalShow] = useState(false);
@@ -242,18 +243,25 @@ function Home() {
         }
       );
       if (response.status === 200) {
-        
-        console.log("change password successfully");
+        showMessage("Đổi mật khẩu", "Đổi mật khẩu thành công", 'success');
+        console.log("Change password successfully");
         setChangePasswordModalShow(false);
       }
-
-      if (response.status === 500) {
-        console.log("change password fail");
-        setChangePasswordModalShow(false);
+      
+      else if (response.status === 409) {
+        showMessage("Đổi mật khẩu", "Mật khẩu cũ không chính xác!", 'error');
+        setIsCurrentPasswordValid(false);
+        setNewPassword('');
+        setIsNewPasswordValid(false);
+        setConfirmedPassword('');
+        setIsConfirmedPasswordValid(false);
+        console.log("Incorrect old password!");
+        // setChangePasswordModalShow(false);
       }
-
-      if (response.status === 409) {
-        console.log("wrong old password");
+      
+      else if (response.status === 500) {
+        showMessage("Đổi mật khẩu", "Đổi mật khẩu thất bại", 'error');
+        console.log("Change password fail");
         setChangePasswordModalShow(false);
       }
     } catch (error) {
@@ -669,13 +677,24 @@ function Home() {
                 placeholder="Mật khẩu mới"
                 value={newPassword}
                 onChange={e => {
-                  setIsNewPasswordValid(true);
-                  setNewPassword(e.target.value);
+                  if (e.target.value !== "") {
+                    setIsNewPasswordValid(true);
+                    setNewPassword(e.target.value);
+                  }
+                  else {
+                    setIsNewPasswordValid(false);
+                    setNewPassword("");
+                  }
                 }}
               />
               {!isNewPasswordValid && (
                 <Form.Text className="text-danger">
                   *Mật khẩu phải chứa ít nhất 8 ký tự, gồm ít nhất một ký tự hoa, một ký tự thường và một số.
+                </Form.Text>
+              )}
+              {isNewPasswordValid && (currentPassword === newPassword) && (
+                <Form.Text className="text-danger">
+                  *Mật khẩu mới phải khác mật khẩu cũ!
                 </Form.Text>
               )}
             </Form.Group>
@@ -686,11 +705,11 @@ function Home() {
                 placeholder="Xác nhận mật khẩu mới"
                 value={confirmedPassword}
                 onChange={e => {
-                  setIsConfirmedPasswordValid(true);
                   setConfirmedPassword(e.target.value);
+                  setIsConfirmedPasswordValid(true);
                 }}
               />
-              {!isCurrentPasswordValid && (
+              {newPassword !== confirmedPassword && (
                 <Form.Text className="text-danger">
                   *Mật khẩu không khớp!
                 </Form.Text>
@@ -699,7 +718,11 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant='primary' onClick={handleChangePassword}>
+          <Button
+            variant='primary'
+            onClick={handleChangePassword}
+            disabled={newPassword === "" || confirmedPassword ==="" || (currentPassword === newPassword) || (newPassword !== confirmedPassword)}
+          >
             Xác nhận
           </Button>
         </Modal.Footer>
