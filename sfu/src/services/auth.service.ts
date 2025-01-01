@@ -108,7 +108,7 @@ class AuthService {
       const isCorrectPassword = await verifyUserPassword(userId, plainTextOldPassword);
 
       if (!isCorrectPassword) {
-        throw new HttpException(409, "Incorrect old password!");
+        throw new Error("Incorrect old password!");
       }
 
       await updateUserPasswordById(userId, plainTextNewPassword);

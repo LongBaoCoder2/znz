@@ -7,6 +7,9 @@ import { RequestWithUser } from "../interfaces/auth.interface";
 import { HttpException } from "@sfu/exceptions/HttpException";
 import { UserChangePasswordDto } from "@sfu/dtos/user.dto";
 
+import { childLogger } from "@sfu/core/logger";
+const sfuLogger = childLogger("sfu");
+
 class AuthController {
   public authService = new AuthService();
 
@@ -99,16 +102,16 @@ class AuthController {
         message: "Update password successfully!" 
       });
     } catch (error: any) {
-      if (error instanceof HttpException) {
-        res.status(error.status).json({ 
-          message: error.message,
-        });
-      } else {
-        res.status(500).json({ 
-          message: "Error when updating password!",
-        });
-      }
-      
+      sfuLogger.error("Error changing password: ", error);
+
+      const statusCode = error.message === "Incorrect old password!" ? 409 : 500;
+      const errorMessage = statusCode === 409
+        ? "Incorrect old password!"
+        : "Error sending message.";
+  
+      res.status(statusCode).json({
+        message: errorMessage,
+      });
     }
   };
 }
