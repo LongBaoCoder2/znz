@@ -13,7 +13,7 @@ function SignIn() {
   let navigate = useNavigate();
 
   const { showMessage } = useNotify();
-  const { loading, isAuthenticated, login } = useAuth();
+  const { loading, login, setHasJustRegistered } = useAuth();
 
   const [isSignIn, setIsSignIn] = useState(true);
 
@@ -105,7 +105,7 @@ function SignIn() {
   }, [loading]);
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
