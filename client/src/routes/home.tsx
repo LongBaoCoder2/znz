@@ -59,7 +59,7 @@ function Home() {
 
   const [changePasswordModalShow, setChangePasswordModalShow] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
-  const [isCurrentPasswordValid, setIsCurrentPasswordValid] = useState(false);
+  const [isCurrentPasswordValid, setIsCurrentPasswordValid] = useState(true);
   const [newPassword, setNewPassword] = useState("");
   const [isNewPasswordValid, setIsNewPasswordValid] = useState(false);
   const [confirmedPassword, setConfirmedPassword] = useState("");
@@ -242,30 +242,27 @@ function Home() {
           }
         }
       );
+
       if (response.status === 200) {
         showMessage("Đổi mật khẩu", "Đổi mật khẩu thành công", 'success');
         console.log("Change password successfully");
         setChangePasswordModalShow(false);
       }
-      
-      else if (response.status === 409) {
-        showMessage("Đổi mật khẩu", "Mật khẩu cũ không chính xác!", 'error');
+
+    } catch (error: any) {
+      if (error.status === 409) {
         setIsCurrentPasswordValid(false);
         setNewPassword('');
         setIsNewPasswordValid(false);
         setConfirmedPassword('');
         setIsConfirmedPasswordValid(false);
         console.log("Incorrect old password!");
-        // setChangePasswordModalShow(false);
       }
-      
-      else if (response.status === 500) {
+      else if (error.status === 500) {
         showMessage("Đổi mật khẩu", "Đổi mật khẩu thất bại", 'error');
         console.log("Change password fail");
         setChangePasswordModalShow(false);
       }
-    } catch (error) {
-      console.error(error);
     }
   };
 
