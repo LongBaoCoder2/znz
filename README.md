@@ -23,8 +23,6 @@
 
 [Redis](https://redis.io/): In-memory data store for caching and real-time features.
 
-![architecture](img/architecture.png)
-
 
 # Prerequisites
 
