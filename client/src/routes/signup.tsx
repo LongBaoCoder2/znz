@@ -192,12 +192,12 @@ function SignUp() {
       >
         <Modal.Header>
           <Modal.Title>
-            Chỉ một bước nữa thôi!
+            Đăng ký thành công!
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
-            Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để hoàn tất thủ tục đăng ký!
+            Bạn vui lòng sử dụng tài khoản vừa đăng ký để đăng nhập!
           </p>
         </Modal.Body>
         <Modal.Footer>
