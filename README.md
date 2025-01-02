@@ -1,6 +1,8 @@
-# znz
+# 🚀 ZNZ Not Zoom
 
-# Features
+ZNZ is a user-friendly video conferencing application offering real-time audio and video communication, meeting management, and interactive features to make virtual collaboration seamless and engaging.
+
+## ✨ Features
 
 - Authentication and user management.
 - Meeting creation and management.
@@ -12,34 +14,30 @@
 - Participant management (approve, remove, and transfer host rights).
 - Adjustable meeting layout and user pinning.
 
-# Technology Stacks
-[Vite + React](https://vite.dev/guide/): Frontend development.
-
-[Express.js](https://expressjs.com/): Backend framework.
-
-[Mediasoup](https://mediasoup.org/): WebRTC handling for real-time communication.
-
-[PostgreSQL](https://www.postgresql.org/): Database management.
-
-[Redis](https://redis.io/): In-memory data store for caching and real-time features.
+## 🛠️ Technology Stacks
+- [Vite + React](https://vite.dev/guide/): Frontend development.
+- [Express.js](https://expressjs.com/): Backend framework.
+- [Mediasoup](https://mediasoup.org/): WebRTC handling for real-time communication.
+- [PostgreSQL](https://www.postgresql.org/): Database management.
+- [Redis](https://redis.io/): In-memory data store for caching and real-time features.
 
 
-# Prerequisites
+## 🧑‍💻 Prerequisites
 
 - Node.js (v22 or later)
 - Yarn package manager
 - Docker and Docker Compose
 
-# Setup Instructions
+## 🚀 Setup Instructions
 
-## 1. Clone the Repository
+### 1. Clone the Repository
 
 ```sh
 git clone https://github.com/LongBaoCoder2/znz.git
 cd znz
 ```
 
-## 2. Start the Database
+### 2. Start the Database
 
 Start the PostgreSQL database container using Docker Compose:
 
@@ -47,7 +45,7 @@ Start the PostgreSQL database container using Docker Compose:
 docker compose up -d
 ```
 
-## 3. Install Dependencies
+### 3. Install Dependencies
 
 Install dependencies for both client and server:
 
@@ -55,7 +53,7 @@ Install dependencies for both client and server:
 yarn install
 ```
 
-## 4. Run migrations
+### 4. Run migrations
 
 Run database migrations for both client and server:
 
@@ -63,7 +61,7 @@ Run database migrations for both client and server:
 yarn db:generate-dev
 ```
 
-## 4. Run the Application
+### 4. Run the Application
 
 Start both the client and SFU server:
 
@@ -75,7 +73,7 @@ yarn dev
 The client will be available at http://localhost:3000.
 The SFU server will run on http://localhost:8000.
 
-Project Structure
+## 📁 Project Structure
 
 ```
 .
@@ -95,7 +93,7 @@ Project Structure
 ```
 
 
-# Environment Variables
+## 🧑‍💻 Environment Variables
 
 Create .env files in both client and sfu folders and configure the following variables:
 
@@ -115,7 +113,7 @@ SECRET_KEY=<secret key>
 REFRESH_SECRET_KEY=<refresh secret key>
 ```
 
-## Development Notes
+## 📝 Development Notes
 
 Ensure Docker is running to start the PostgreSQL database.
 
@@ -123,17 +121,17 @@ Use `yarn dev` to run both client and server simultaneously.
 
 Modify the `docker-compose.yml` file to update database configurations if needed.
 
-# Future Enhancements
+## Future Enhancements
 
 - Add screen sharing.
 - Add emoji feedback and raising hand.
 - Implement analytics and reporting for meetings.
 - Improve UI/UX for a seamless user experience.
 
-# Contributing
+## Contributing
 
 Contributions are welcome! Please fork the repository and create a pull request for any feature or bug fix.
 
-# License
+## License
 
 This project is licensed under the MIT License.
