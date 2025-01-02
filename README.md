@@ -2,6 +2,8 @@
 
 | ZNZ not zoom
 
+![architecture](img/architecture.png)
+
 # Features
 
 - Create and join meetings via link or ID and password.
