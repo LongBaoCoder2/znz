@@ -2,12 +2,14 @@
 
 # Features
 
+- Authentication and user management.
+- Meeting creation and management.
+- Real-time audio and video communication.
 - Create and join meetings via link or ID and password.
 - Real-time audio and video communication.
 - Screen sharing.
 - Chat functionality during meetings.
 - Participant management (approve, remove, and transfer host rights).
-- Emoji feedback and raising hand.
 - Adjustable meeting layout and user pinning.
 
 # Technology Stacks
@@ -125,11 +127,10 @@ Modify the `docker-compose.yml` file to update database configurations if needed
 
 # Future Enhancements
 
-Add authentication for secure access.
-
-Implement analytics and reporting for meetings.
-
-Improve UI/UX for a seamless user experience.
+- Add screen sharing.
+- Add emoji feedback and raising hand.
+- Implement analytics and reporting for meetings.
+- Improve UI/UX for a seamless user experience.
 
 # Contributing
 
