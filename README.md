@@ -2,10 +2,6 @@
 
 | ZNZ not zoom
 
-client/: Frontend application built with Vite and React.
-sfu/: Backend application built with Express.js and Mediasoup for handling WebRTC connections.
-Postgres: Used for storing application data.
-
 # Features
 
 - Create and join meetings via link or ID and password.
@@ -78,14 +74,11 @@ Project Structure
 
 ```
 .
+├── .github             # github action workflows
 ├── client              # Vite React frontend
 ├── sfu                 # Express.js + Mediasoup backend
 ├── .editorconfig       # Editor configuration
 ├── .eslintrc.json      # ESLint configuration
-├── .git                # Git version control directory
-├── .github             # GitHub-specific files
-├── .gitignore          # Git ignore rules
-├── .prettierignore     # Prettier ignore rules
 ├── .prettierrc         # Prettier configuration
 ├── DEVELOPMENT.md      # Development notes and guidelines
 ├── LICENSE             # License information
