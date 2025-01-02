@@ -1,9 +1,5 @@
 # znz
 
-| ZNZ not zoom
-
-![architecture](img/architecture.png)
-
 # Features
 
 - Create and join meetings via link or ID and password.
@@ -20,6 +16,9 @@
 [Mediasoup](https://mediasoup.org/): WebRTC handling for real-time communication.
 [PostgreSQL](https://www.postgresql.org/): Database management.
 [Redis](https://redis.io/): In-memory data store for caching and real-time features.
+
+![architecture](img/architecture.png)
+
 
 # Prerequisites
 
