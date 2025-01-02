@@ -12,9 +12,13 @@
 
 # Technology Stacks
 [Vite + React](https://vite.dev/guide/): Frontend development.
+
 [Express.js](https://expressjs.com/): Backend framework.
+
 [Mediasoup](https://mediasoup.org/): WebRTC handling for real-time communication.
+
 [PostgreSQL](https://www.postgresql.org/): Database management.
+
 [Redis](https://redis.io/): In-memory data store for caching and real-time features.
 
 ![architecture](img/architecture.png)
