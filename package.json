@@ -13,6 +13,7 @@
     "build": "npm run build:sfu && npm run build:client",
     "build:sfu": "npm --prefix sfu run build",
     "build:client": "npm --prefix client run build",
+    "db:generate-dev": "npm --prefix sfu run db:generate-dev",
     "dev": "concurrently \"npm --prefix sfu run dev\" \"npm --prefix client run dev\""
   },
   "devDependencies": {
